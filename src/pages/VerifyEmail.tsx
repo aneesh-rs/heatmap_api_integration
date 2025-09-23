@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { verifyEmail } from '../services/auth';
+import { verifyEmail, fetchUserProfile } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import Loader from './LoaderScreen';
 
@@ -22,17 +22,16 @@ export default function VerifyEmail() {
       setSubmitting(true);
       const res = await verifyEmail(token);
       if (res.success && res.data) {
-        toast.success('Email verified');
-        setUser({
-          id: res.data.user.id,
-          email: res.data.user.email,
-          role: res.data.user.role as 'Admin' | 'User',
-          name: '',
-          firstSurname: '',
-          secondSurname: '',
-          birthday: '',
-        });
-        navigate(res.data.user.role === 'Admin' ? '/admin' : '/');
+        // Token stored; fetch profile
+        const prof = await fetchUserProfile();
+        if (prof.success && prof.data) {
+          toast.success('Email verified');
+          setUser(prof.data);
+          navigate(prof.data.role === 'Admin' ? '/admin' : '/');
+        } else {
+          toast.error(prof.error || 'Verification failed');
+          navigate('/login');
+        }
       } else {
         toast.error(res.error || 'Verification failed');
         navigate('/login');

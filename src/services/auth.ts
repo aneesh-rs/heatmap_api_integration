@@ -35,6 +35,21 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
+// API user profile shape
+export interface ApiUserProfile {
+  id: string;
+  email: string;
+  role: 'Admin' | 'User' | string;
+  name: string;
+  firstSurname: string;
+  secondSurname: string;
+  birthday: string;
+  photoURL?: string;
+  emailVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Login function
 export const login = async (
   email: string,
@@ -46,11 +61,10 @@ export const login = async (
       password,
     });
 
-    const { access_token, user } = response.data;
+    const { access_token } = response.data;
 
-    // Store token and user data
+    // Store token only
     localStorage.setItem('access_token', access_token);
-    localStorage.setItem('user', JSON.stringify(user));
 
     return {
       success: true,
@@ -119,11 +133,10 @@ export const verifyEmail = async (
       }
     );
 
-    const { access_token, user } = response.data;
+    const { access_token } = response.data;
 
-    // Store token and user data
+    // Store token only
     localStorage.setItem('access_token', access_token);
-    localStorage.setItem('user', JSON.stringify(user));
 
     return {
       success: true,
@@ -148,7 +161,58 @@ export const logout = async (): Promise<void> => {
   localStorage.removeItem('user');
 };
 
-// Get current user from localStorage
+// Map API profile payload to app User
+const mapProfileToUser = (p: ApiUserProfile): User => ({
+  id: p.id,
+  email: p.email,
+  role: (p.role as 'Admin' | 'User') || 'User',
+  name: p.name ?? '',
+  firstSurname: p.firstSurname ?? '',
+  secondSurname: p.secondSurname ?? '',
+  birthday: p.birthday ?? '',
+  photoURL: p.photoURL ?? undefined,
+});
+
+// Fetch current user profile from API
+export const fetchUserProfile = async (): Promise<ApiResponse<User>> => {
+  try {
+    const res = await axiosClient.get<ApiUserProfile>('/users/profile');
+    return { success: true, data: mapProfileToUser(res.data) };
+  } catch (error: unknown) {
+    console.error('Fetch profile failed:', error);
+    const apiError = (error as { response?: { data?: { message?: string } } })
+      ?.response?.data?.message;
+    return { success: false, error: apiError || 'Unable to fetch profile' };
+  }
+};
+
+// Update current user profile
+export interface UpdateProfileRequest {
+  email: string;
+  name: string;
+  firstSurname: string;
+  secondSurname: string;
+  birthday: string;
+  photoURL: string;
+  emailVerified: boolean;
+  verificationToken: Record<string, unknown> | null;
+}
+
+export const updateUserProfile = async (
+  payload: UpdateProfileRequest
+): Promise<ApiResponse<User>> => {
+  try {
+    const res = await axiosClient.put<ApiUserProfile>('/user/profile', payload);
+    return { success: true, data: mapProfileToUser(res.data) };
+  } catch (error: unknown) {
+    console.error('Update profile failed:', error);
+    const apiError = (error as { response?: { data?: { message?: string } } })
+      ?.response?.data?.message;
+    return { success: false, error: apiError || 'Unable to update profile' };
+  }
+};
+
+// Deprecated: localStorage user
 export const getCurrentUser = (): User | null => {
   try {
     const userStr = localStorage.getItem('user');
@@ -171,9 +235,8 @@ export const getCurrentUser = (): User | null => {
   }
 };
 
-// Check if user is authenticated
+// Token presence check
 export const isAuthenticated = (): boolean => {
   const token = localStorage.getItem('access_token');
-  const user = localStorage.getItem('user');
-  return !!(token && user);
+  return !!token;
 };

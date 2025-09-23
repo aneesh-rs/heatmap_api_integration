@@ -6,11 +6,10 @@ import { PiEnvelope } from 'react-icons/pi';
 import { MdOutlineLock } from 'react-icons/md';
 import { IoMdEye, IoMdEyeOff } from 'react-icons/io';
 import LanguageSwitcher from '../components/LanguageSwitcher';
-import { login } from '../services/auth';
+import { login, fetchUserProfile } from '../services/auth';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader';
 import { useAuth } from '../context/AuthContext';
-import { User } from '../types';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 type FormData = {
@@ -41,21 +40,18 @@ export default function Login() {
 
     const res = await login(data.email, data.password);
     if (res.success && res.data) {
-      toast.success(t('Login.successToast'));
-      const userData: User = {
-        id: res.data.user.id,
-        email: res.data.user.email,
-        role: res.data.user.role as 'Admin' | 'User',
-        name: '',
-        firstSurname: '',
-        secondSurname: '',
-        birthday: '',
-      };
-      setUser(userData);
-      if (res.data.user.role === 'Admin') {
-        navigate('/admin');
+      // Fetch profile after storing token
+      const prof = await fetchUserProfile();
+      if (prof.success && prof.data) {
+        toast.success(t('Login.successToast'));
+        setUser(prof.data);
+        if (prof.data.role === 'Admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
       } else {
-        navigate('/');
+        toast.error(prof.error || t('Login.errorToast'));
       }
     } else {
       if (res.error === 'EMAIL_NOT_VERIFIED') {

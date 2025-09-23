@@ -7,7 +7,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { User } from '../types';
-import { getCurrentUser, isAuthenticated } from '../services/auth';
+import { fetchUserProfile, isAuthenticated } from '../services/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -24,16 +24,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Check if user is authenticated on app load
-    const checkAuth = () => {
+    const checkAuth = async () => {
       setLoading(true);
 
       if (isAuthenticated()) {
-        const currentUser = getCurrentUser();
-        if (currentUser) {
-          console.log('User authenticated:', currentUser);
-          setUser(currentUser);
+        const res = await fetchUserProfile();
+        if (res.success && res.data) {
+          setUser(res.data);
         } else {
-          console.log('No valid user data found');
           setUser(null);
         }
       } else {

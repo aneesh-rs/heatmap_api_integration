@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { IMAGES } from '../assets/images/ImageConstants';
 import Button from './ui/CustomButton';
 import { useAuth } from '../context/AuthContext';
-import { updateUserData } from '../services/firebase';
+import { updateUserProfile } from '../services/auth';
 import { User } from '../types';
 import toast from 'react-hot-toast';
 import AdvancedSettingsModal from './AdvancedSettingsModal';
@@ -87,12 +87,21 @@ const Settings = () => {
 
     setLoading(true);
     try {
-      const updatedData = { ...formData };
-      const res = await updateUserData(updatedData);
-      if (res.success) {
+      const payload = {
+        email: formData.email,
+        name: formData.name,
+        firstSurname: formData.firstSurname,
+        secondSurname: formData.secondSurname,
+        birthday: formData.birthday,
+        photoURL: formData.photoURL || '',
+        emailVerified: true,
+        verificationToken: {},
+      };
+      const res = await updateUserProfile(payload);
+      if (res.success && res.data) {
         toast.success(t('Settings.userDataUpdatedSuccess'));
-        setUser(updatedData);
-        setFormData(updatedData);
+        setUser(res.data);
+        setFormData(res.data);
         setSelectedFile(null);
       } else {
         toast.error(res.error ?? t('Settings.userDataUpdatedError'));
