@@ -194,15 +194,16 @@ export interface UpdateProfileRequest {
   secondSurname: string;
   birthday: string;
   photoURL: string;
-  emailVerified: boolean;
-  verificationToken: Record<string, unknown> | null;
 }
 
 export const updateUserProfile = async (
   payload: UpdateProfileRequest
 ): Promise<ApiResponse<User>> => {
   try {
-    const res = await axiosClient.put<ApiUserProfile>('/user/profile', payload);
+    const res = await axiosClient.put<ApiUserProfile>(
+      '/users/profile',
+      payload
+    );
     return { success: true, data: mapProfileToUser(res.data) };
   } catch (error: unknown) {
     console.error('Update profile failed:', error);

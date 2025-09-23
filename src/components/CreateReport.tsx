@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import Button from './ui/CustomButton';
 import RichTextEditor from './ui/RichTextEditor';
 import { Category, Feeling, ReportFormData } from '../types';
-import { createReport } from '../services/firebase';
+import { createReport } from '../services/reports';
 import toast from 'react-hot-toast';
 import { categories, feelings } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
@@ -82,7 +82,7 @@ const CreateReport = ({
     }
 
     setIsSubmitting(true);
-    const res = await createReport(data, user.id);
+    const res = await createReport(data);
     if (res.success) {
       toast.success(t('CreateReport.reportCreatedSuccess'));
       setIsOpen(false);
@@ -152,10 +152,11 @@ const CreateReport = ({
                       <button
                         key={feeling.id}
                         type='button'
-                        className={`p-1 rounded-full cursor-pointer transition-colors ${selectedFeeling === feeling.id
+                        className={`p-1 rounded-full cursor-pointer transition-colors ${
+                          selectedFeeling === feeling.id
                             ? 'text-blue-500'
                             : 'text-gray-700'
-                          }`}
+                        }`}
                         onClick={() =>
                           setValue('feeling', feeling.id as Feeling)
                         }
@@ -173,19 +174,21 @@ const CreateReport = ({
                       <button
                         key={category.id}
                         type='button'
-                        className={`flex flex-1 flex-col items-center justify-start py-3 rounded-lg cursor-pointer transition-colors ${selectedCategory === category.id
+                        className={`flex flex-1 flex-col items-center justify-start py-3 rounded-lg cursor-pointer transition-colors ${
+                          selectedCategory === category.id
                             ? 'bg-blue-100 text-blue-500'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
+                        }`}
                         onClick={() =>
                           setValue('category', category.id as Category)
                         }
                       >
                         <div
-                          className={`${selectedCategory === category.id
+                          className={`${
+                            selectedCategory === category.id
                               ? 'text-blue-500'
                               : 'text-gray-600'
-                            }`}
+                          }`}
                         >
                           {category.icon}
                         </div>
@@ -223,8 +226,9 @@ const CreateReport = ({
                             {...field}
                             type='text'
                             id='firstName'
-                            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldState.error ? 'border-red-500' : ''
-                              }`}
+                            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              fieldState.error ? 'border-red-500' : ''
+                            }`}
                             placeholder={t('CreateReport.firstNamePlaceholder')}
                           />
                           {fieldState.error && (
@@ -251,8 +255,9 @@ const CreateReport = ({
                             {...field}
                             type='text'
                             id='lastName'
-                            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldState.error ? 'border-red-500' : ''
-                              }`}
+                            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              fieldState.error ? 'border-red-500' : ''
+                            }`}
                             placeholder={t('CreateReport.lastNamePlaceholder')}
                           />
                           {fieldState.error && (
@@ -302,8 +307,9 @@ const CreateReport = ({
                             }}
                             type='text'
                             id='location'
-                            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${fieldState.error ? 'border-red-500' : ''
-                              }`}
+                            className={`w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                              fieldState.error ? 'border-red-500' : ''
+                            }`}
                             placeholder={t('CreateReport.locationPlaceholder')}
                           />
 

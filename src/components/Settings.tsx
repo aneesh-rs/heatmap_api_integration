@@ -94,8 +94,6 @@ const Settings = () => {
         secondSurname: formData.secondSurname,
         birthday: formData.birthday,
         photoURL: formData.photoURL || '',
-        emailVerified: true,
-        verificationToken: {},
       };
       const res = await updateUserProfile(payload);
       if (res.success && res.data) {

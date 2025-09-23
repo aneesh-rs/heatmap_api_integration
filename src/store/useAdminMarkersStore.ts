@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { LatLngTuple } from 'leaflet';
 import { ReportFormData, ReportStatus } from '../types';
-import { getAllRecords } from '../services/firebase';
+import { getReports } from '../services/reports';
 
 export type AdminMarker = ReportFormData & {
   id: string;
@@ -26,14 +26,9 @@ export const useAdminMarkersStore = create<AdminMarkersState>((set) => ({
   fetchMarkers: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await getAllRecords();
-      if (res.success && res.records) {
-        const markers = (
-          res.records as (ReportFormData & {
-            id: string;
-            reportStatus: ReportStatus;
-          })[]
-        ).map((record) => ({
+      const res = await getReports();
+      if (res.success && res.data) {
+        const markers = res.data.map((record) => ({
           ...record,
           position: [record.location.lat, record.location.lng] as LatLngTuple,
         }));
@@ -43,7 +38,7 @@ export const useAdminMarkersStore = create<AdminMarkersState>((set) => ({
       }
     } catch (error) {
       console.error('Error fetching markers:', error);
-      set({ error: 'Error fetching markers', isLoading: false, });
+      set({ error: 'Error fetching markers', isLoading: false });
     }
   },
 
