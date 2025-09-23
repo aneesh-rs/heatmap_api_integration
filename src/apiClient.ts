@@ -1,17 +1,17 @@
-import axios from 'axios';
+import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: 'https://heatmap-backend-eight.vercel.app/api/',
+  baseURL: "https://heatmap-backend-eight.vercel.app/api/",
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
+    "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
 
 // Add token to requests if available
 axiosClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -27,8 +27,11 @@ axiosClient.interceptors.response.use(
       // localStorage.removeItem('user');
       // window.location.href = '/login';
       console.log(
-        'something went wrong that might refresh the page and push too login'
+        "something went wrong that might refresh the page and push too login"
       );
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

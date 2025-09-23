@@ -1,5 +1,5 @@
-import axiosClient from '../apiClient';
-import { Roles, User } from '../types';
+import axiosClient from "../apiClient";
+import { Roles, User } from "../types";
 
 export interface LoginRequest {
   email: string;
@@ -48,7 +48,7 @@ export interface ApiResponse<T> {
 export interface ApiUserProfile {
   id: string;
   email: string;
-  role: 'Admin' | 'User' | string;
+  role: "Admin" | "User" | string;
   name: string;
   firstSurname: string;
   secondSurname: string;
@@ -76,7 +76,7 @@ export const login = async (
   password: string
 ): Promise<ApiResponse<AuthResponse>> => {
   try {
-    const response = await axiosClient.post<AuthResponse>('/auth/login', {
+    const response = await axiosClient.post<AuthResponse>("/auth/login", {
       email,
       password,
     });
@@ -84,16 +84,16 @@ export const login = async (
     const { access_token } = response.data;
 
     // Store token only
-    localStorage.setItem('access_token', access_token);
+    localStorage.setItem("access_token", access_token);
 
     return {
       success: true,
       data: response.data,
     };
   } catch (error: unknown) {
-    console.error('Login failed:', error);
+    console.error("Login failed:", error);
     const errorMessage =
-      error instanceof Error ? error.message : 'Login failed';
+      error instanceof Error ? error.message : "Login failed";
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
     return {
@@ -107,14 +107,14 @@ export const login = async (
 export const signUp = async (
   email: string,
   password: string,
-  name: string = '',
-  firstSurname: string = '',
-  secondSurname: string = '',
-  birthday: string = '',
-  invitationId: string = ''
+  name: string = "",
+  firstSurname: string = "",
+  secondSurname: string = "",
+  birthday: string = "",
+  invitationId: string = ""
 ): Promise<ApiResponse<unknown>> => {
   try {
-    const response = await axiosClient.post('/auth/signup', {
+    const response = await axiosClient.post("/auth/signup", {
       email,
       password,
       name,
@@ -129,9 +129,9 @@ export const signUp = async (
       data: response.data,
     };
   } catch (error: unknown) {
-    console.error('Signup failed:', error);
+    console.error("Signup failed:", error);
     const errorMessage =
-      error instanceof Error ? error.message : 'Signup failed';
+      error instanceof Error ? error.message : "Signup failed";
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
     return {
@@ -147,7 +147,7 @@ export const verifyEmail = async (
 ): Promise<ApiResponse<AuthResponse>> => {
   try {
     const response = await axiosClient.post<AuthResponse>(
-      '/auth/verify-email',
+      "/auth/verify-email",
       {
         token,
       }
@@ -156,16 +156,16 @@ export const verifyEmail = async (
     const { access_token } = response.data;
 
     // Store token only
-    localStorage.setItem('access_token', access_token);
+    localStorage.setItem("access_token", access_token);
 
     return {
       success: true,
       data: response.data,
     };
   } catch (error: unknown) {
-    console.error('Email verification failed:', error);
+    console.error("Email verification failed:", error);
     const errorMessage =
-      error instanceof Error ? error.message : 'Email verification failed';
+      error instanceof Error ? error.message : "Email verification failed";
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
     return {
@@ -177,32 +177,32 @@ export const verifyEmail = async (
 
 // Logout function
 export const logout = async (): Promise<void> => {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user');
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("user");
 };
 
 // Map API profile payload to app User
 const mapProfileToUser = (p: ApiUserProfile): User => ({
   id: p.id,
   email: p.email,
-  role: (p.role as 'Admin' | 'User') || 'User',
-  name: p.name ?? '',
-  firstSurname: p.firstSurname ?? '',
-  secondSurname: p.secondSurname ?? '',
-  birthday: p.birthday ?? '',
+  role: (p.role as "Admin" | "User") || "User",
+  name: p.name ?? "",
+  firstSurname: p.firstSurname ?? "",
+  secondSurname: p.secondSurname ?? "",
+  birthday: p.birthday ?? "",
   photoURL: p.photoURL ?? undefined,
 });
 
 // Fetch current user profile from API
 export const fetchUserProfile = async (): Promise<ApiResponse<User>> => {
   try {
-    const res = await axiosClient.get<ApiUserProfile>('/users/profile');
+    const res = await axiosClient.get<ApiUserProfile>("/users/profile");
     return { success: true, data: mapProfileToUser(res.data) };
   } catch (error: unknown) {
-    console.error('Fetch profile failed:', error);
+    console.error("Fetch profile failed:", error);
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
-    return { success: false, error: apiError || 'Unable to fetch profile' };
+    return { success: false, error: apiError || "Unable to fetch profile" };
   }
 };
 
@@ -221,37 +221,40 @@ export const updateUserProfile = async (
 ): Promise<ApiResponse<User>> => {
   try {
     const res = await axiosClient.put<ApiUserProfile>(
-      '/users/profile',
+      "/users/profile",
       payload
     );
+    console.log("updateUserProfile", res.data);
     return { success: true, data: mapProfileToUser(res.data) };
   } catch (error: unknown) {
-    console.error('Update profile failed:', error);
+    console.log("updateUserProfile error", error);
+
+    console.error("Update profile failed:", error);
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
-    return { success: false, error: apiError || 'Unable to update profile' };
+    return { success: false, error: apiError || "Unable to update profile" };
   }
 };
 
 // Deprecated: localStorage user
 export const getCurrentUser = (): User | null => {
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     if (userStr) {
       const userData = JSON.parse(userStr);
       return {
         id: userData.id,
         email: userData.email,
         role: userData.role,
-        name: userData.name || '',
-        firstSurname: userData.firstSurname || '',
-        secondSurname: userData.secondSurname || '',
-        birthday: userData.birthday || '',
+        name: userData.name || "",
+        firstSurname: userData.firstSurname || "",
+        secondSurname: userData.secondSurname || "",
+        birthday: userData.birthday || "",
       };
     }
     return null;
   } catch (error) {
-    console.error('Error getting current user:', error);
+    console.error("Error getting current user:", error);
     return null;
   }
 };
@@ -262,7 +265,7 @@ export const forgotPassword = async (
 ): Promise<ApiResponse<{ message: string }>> => {
   try {
     const response = await axiosClient.post<{ message: string }>(
-      '/auth/forgot-password',
+      "/auth/forgot-password",
       { email }
     );
 
@@ -271,9 +274,9 @@ export const forgotPassword = async (
       data: response.data,
     };
   } catch (error: unknown) {
-    console.error('Forgot password failed:', error);
+    console.error("Forgot password failed:", error);
     const errorMessage =
-      error instanceof Error ? error.message : 'Forgot password failed';
+      error instanceof Error ? error.message : "Forgot password failed";
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
     return {
@@ -290,7 +293,7 @@ export const resetPassword = async (
 ): Promise<ApiResponse<{ message: string }>> => {
   try {
     const response = await axiosClient.post<{ message: string }>(
-      '/auth/reset-password',
+      "/auth/reset-password",
       { token, newPassword }
     );
 
@@ -299,9 +302,9 @@ export const resetPassword = async (
       data: response.data,
     };
   } catch (error: unknown) {
-    console.error('Reset password failed:', error);
+    console.error("Reset password failed:", error);
     const errorMessage =
-      error instanceof Error ? error.message : 'Reset password failed';
+      error instanceof Error ? error.message : "Reset password failed";
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
     return {
@@ -313,7 +316,7 @@ export const resetPassword = async (
 
 // Token presence check
 export const isAuthenticated = (): boolean => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   return !!token;
 };
 
@@ -322,26 +325,26 @@ export const googleLogin = async (
   invitationId?: string | null
 ): Promise<ApiResponse<GoogleLoginResponse>> => {
   try {
-    console.log('trying with invitation id : ', invitationId);
+    console.log("trying with invitation id : ", invitationId);
     const response = await axiosClient.post<GoogleLoginResponse>(
-      '/auth/google-login',
+      "/auth/google-login",
       { idToken: googleToken, invitationId }
     );
 
     const { access_token } = response.data;
 
     // Store token in localStorage (same as email/password login)
-    localStorage.setItem('access_token', access_token);
+    localStorage.setItem("access_token", access_token);
 
     return {
       success: true,
       data: response.data,
     };
   } catch (error: unknown) {
-    console.error('Google login failed:', error);
+    console.error("Google login failed:", error);
 
     const errorMessage =
-      error instanceof Error ? error.message : 'Google login failed';
+      error instanceof Error ? error.message : "Google login failed";
 
     const apiError = (error as { response?: { data?: { message?: string } } })
       ?.response?.data?.message;
