@@ -34,7 +34,7 @@ export default function SignUp() {
   const changeLanguage = (lng: string) => i18n.changeLanguage(lng);
 
   const inviteId =
-    new URLSearchParams(window.location.search).get('inviteId') || '';
+    new URLSearchParams(window.location.search).get('invitationId') || '';
 
   const onSubmit = async (data: FormData) => {
     if (data.password !== data.confirmPassword) {

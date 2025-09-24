@@ -7,6 +7,7 @@ export type AdminMarker = ReportFormData & {
   id: string;
   reportStatus: ReportStatus;
   position: LatLngTuple;
+  _id?: string;
 };
 
 interface AdminMarkersState {

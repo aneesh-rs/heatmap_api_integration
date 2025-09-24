@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { verifyEmail, fetchUserProfile } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import Loader from './LoaderScreen';

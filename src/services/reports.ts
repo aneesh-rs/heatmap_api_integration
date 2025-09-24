@@ -41,6 +41,7 @@ export const updateReportStatus = async (
   reportStatus: ReportStatus
 ): Promise<ApiResponse<object>> => {
   try {
+    console.log('reportStatus and ID : ', reportStatus, reportId);
     await axiosClient.put(`/reports/${reportId}/status`, { reportStatus });
     return { success: true, data: {} };
   } catch (error: unknown) {

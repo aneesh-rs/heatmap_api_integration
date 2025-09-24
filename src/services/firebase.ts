@@ -27,7 +27,6 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { serverTimestamp } from 'firebase/firestore';
 import { Roles, User as AppUser } from '../types';
 import { query, where, limit } from 'firebase/firestore';
 
@@ -459,73 +458,4 @@ export const updateReportStatus = async (
   }
 };
 
-// Generate an invitation link for a given role
-export async function generateInviteLink(role: Roles): Promise<string> {
-  const inviterId = firebaseAuth.currentUser?.uid;
-  if (!inviterId) {
-    throw new Error('Not authenticated');
-  }
-
-  const invitationRef = await addDoc(collection(firestore, 'invitations'), {
-    inviterId,
-    role,
-    status: 'pending',
-    createdAt: serverTimestamp(),
-  });
-
-  return `https://heatmap-tau-five.vercel.app/signup?inviteId=${invitationRef.id}`;
-}
-
-// Sign up a user using an invitation
-export async function signupWithInvite(
-  inviteId: string,
-  email: string,
-  password: string,
-  userData: Omit<AppUser, 'id' | 'role' | 'email'>
-): Promise<AppUser> {
-  // Validate invitation
-  const inviteDocRef = doc(firestore, 'invitations', inviteId);
-  const inviteSnap = await getDoc(inviteDocRef);
-  if (!inviteSnap.exists()) {
-    throw new Error('Invitation not found');
-  }
-  const inviteData = inviteSnap.data() as {
-    role: Roles;
-    status: string;
-  };
-
-  if (inviteData.status !== 'pending') {
-    throw new Error('Invitation already used or expired');
-  }
-
-  // Create auth user
-  const userCredential: UserCredential = await createUserWithEmailAndPassword(
-    firebaseAuth,
-    email,
-    password
-  );
-  const uid = userCredential.user.uid;
-
-  // Send email verification and immediately sign out to prevent access before verification
-  await sendEmailVerification(userCredential.user);
-
-  // Create Firestore user document
-  const newUser: AppUser = {
-    id: uid,
-    email,
-    role: inviteData.role,
-    ...userData,
-  };
-  await setDoc(doc(firestore, 'users', uid), newUser);
-
-  // Mark invitation as verification_sent and reserve the email for acceptance post-verification
-  await updateDoc(inviteDocRef, {
-    status: 'verification_sent',
-    reservedEmail: email,
-  });
-
-  // Sign out so user cannot access app until they verify and log in again
-  await signOut(firebaseAuth);
-
-  return newUser;
-}
+// Firebase invitation functions removed - now using API

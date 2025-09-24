@@ -77,8 +77,12 @@ const LocationDetailsModal = ({
 
   const handleUpdateReportStatus = async () => {
     if (!currentReport) return;
+    console.log('currentReport : ', currentReport);
 
-    const res = await updateReportStatus(currentReport.id, currentStatus);
+    const res = await updateReportStatus(
+      currentReport._id as string,
+      currentStatus
+    );
     if (res.success) {
       toast.success(t('LocationDetailsModal.reportStatusUpdatedSuccess'));
       onClose();
