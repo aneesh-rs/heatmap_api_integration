@@ -1,10 +1,9 @@
 // components/ForgotPasswordModal.tsx
 import React, { useEffect, useState } from 'react';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { firebaseAuth } from '../../firebaseConfig';
-import { FirebaseError } from 'firebase/app';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { forgotPassword } from '../services/auth';
+import toast from 'react-hot-toast';
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -25,12 +24,15 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({
     e.preventDefault();
     setMessage('');
     setError('');
-    try {
-      await sendPasswordResetEmail(firebaseAuth, email);
+
+    const result = await forgotPassword(email);
+    if (result.success) {
       setMessage(t('Login.forgotPasswordMessage'));
       setEmail('');
-    } catch (err) {
-      setError((err as FirebaseError).message);
+      toast.success(t('Login.forgotPasswordMessage'));
+    } else {
+      setError(result.error || 'Failed to send reset email');
+      toast.error(result.error || 'Failed to send reset email');
     }
   };
   const modalRef = React.useRef<HTMLDivElement>(null);

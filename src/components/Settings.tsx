@@ -250,11 +250,6 @@ const Settings = () => {
                   </h3>
                   <ul className='list-disc pl-5 text-gray-700'>
                     <li>{t('Settings.withPassword')}</li>
-                    <li>
-                      <a href='#' className='text-blue-500 hover:underline'>
-                        {t('Settings.configure2FA')}
-                      </a>
-                    </li>
                   </ul>
                 </div>
                 {user?.role === 'Admin' && (

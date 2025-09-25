@@ -22,9 +22,12 @@ export default function MarkerClusterOverlay({
 }: MarkerClusterOverlayProps) {
   const map = useMap();
   const [currentZoom, setCurrentZoom] = useState(map.getZoom());
-  const [clusteredItems, setClusteredItems] = useState<(AdminMarker | MarkerCluster)[]>([]);
+  const [clusteredItems, setClusteredItems] = useState<
+    (AdminMarker | MarkerCluster)[]
+  >([]);
   const { selectedDistricts, interestZone } = useFilterDistrictStore();
-  const polygons: PolygonData[] = interestZone === 'City' ? polygons2 : polygons1;
+  const polygons: PolygonData[] =
+    interestZone === 'City' ? polygons2 : polygons1;
 
   // Update zoom level when map zoom changes
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function MarkerClusterOverlay({
   // Recalculate clusters when markers, zoom level, or selected districts change
   useEffect(() => {
     let filteredMarkers = markers.filter((m) => m.reportStatus !== 'Closed');
-    
+
     // Filter markers based on selected districts only if districts are selected
     if (selectedDistricts.length > 0) {
       filteredMarkers = filteredMarkers.filter((marker) => {
@@ -50,11 +53,13 @@ export default function MarkerClusterOverlay({
           marker.position[1],
           polygons
         );
-        return districtNumber !== null && selectedDistricts.includes(districtNumber);
+        return (
+          districtNumber !== null && selectedDistricts.includes(districtNumber)
+        );
       });
     }
     // If no districts are selected, show all markers (filteredMarkers remains unchanged)
-    
+
     const clustered = clusterMarkers(filteredMarkers, currentZoom);
     setClusteredItems(clustered);
   }, [markers, currentZoom, selectedDistricts, interestZone, polygons]);

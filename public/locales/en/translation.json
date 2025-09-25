@@ -21,7 +21,18 @@
         "googleError": "Google login failed. Please try again.",
         "facebookSuccess": "Facebook Login successful!",
         "facebookError": "Facebook login failed. Please try again.",
-        "emailNotVerified": "Your email is not verified. Please check your inbox and verify your email before logging in."
+        "emailNotVerified": "Your email is not verified. Please check your inbox and verify your email before logging in.",
+        "resetPasswordSuccess": "Password reset successfully! You can now login with your new password.",
+        "resetPasswordError": "Failed to reset password. Please try again.",
+        "invalidResetLink": "Invalid or expired reset link.",
+        "newPasswordLabel": "New Password",
+        "newPasswordPlaceholder": "Enter your new password",
+        "confirmPasswordLabel": "Confirm Password",
+        "confirmPasswordPlaceholder": "Confirm your new password",
+        "passwordMismatch": "Passwords do not match",
+        "resetPasswordButton": "Reset Password",
+        "backToLogin": "Back to Login",
+        "rememberPassword": "Remember your password?"
     },
     "SignUp": {
         "emailInvalid": "Please enter a valid email address.",
@@ -79,7 +90,7 @@
         "email": "Email",
         "emailPlaceholder": "Hello@ejemplo.com",
         "security": "Security",
-        "withPassword": "With password",
+        "withPassword": "Reset Password",
         "configure2FA": "Configurate a 2FA",
         "accountRole": "Account role",
         "userType": "Your type of user",

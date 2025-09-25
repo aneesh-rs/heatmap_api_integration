@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import Loader from '../components/Loader';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
+import ForgotPasswordModal from '../components/ForgotPassword';
 
 type FormData = {
   email: string;
@@ -21,6 +22,7 @@ export default function Login() {
   const { t, i18n } = useTranslation('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { user, setUser } = useAuth();
 
   const {
@@ -172,7 +174,13 @@ export default function Login() {
                 {t('Login.rememberMe')}
               </label>
             </div>
-            {/* Forgot password temporarily disabled during API migration */}
+            <button
+              type='button'
+              className='text-blue-500 cursor-pointer hover:underline text-sm'
+              onClick={() => setShowForgotPassword(true)}
+            >
+              {t('Login.forgotPassword')}
+            </button>
           </div>
 
           {/* Login Button */}
@@ -192,6 +200,11 @@ export default function Login() {
           {/* Social logins temporarily disabled during API migration */}
         </div>
       </form>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </div>
   );
 }

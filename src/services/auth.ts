@@ -20,6 +20,15 @@ export interface VerifyEmailRequest {
   token: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface AuthResponse {
   access_token: string;
   user: {
@@ -233,6 +242,61 @@ export const getCurrentUser = (): User | null => {
   } catch (error) {
     console.error('Error getting current user:', error);
     return null;
+  }
+};
+
+// Forgot password function
+export const forgotPassword = async (
+  email: string
+): Promise<ApiResponse<{ message: string }>> => {
+  try {
+    const response = await axiosClient.post<{ message: string }>(
+      '/auth/forgot-password',
+      { email }
+    );
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: unknown) {
+    console.error('Forgot password failed:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Forgot password failed';
+    const apiError = (error as { response?: { data?: { message?: string } } })
+      ?.response?.data?.message;
+    return {
+      success: false,
+      error: apiError || errorMessage,
+    };
+  }
+};
+
+// Reset password function
+export const resetPassword = async (
+  token: string,
+  newPassword: string
+): Promise<ApiResponse<{ message: string }>> => {
+  try {
+    const response = await axiosClient.post<{ message: string }>(
+      '/auth/reset-password',
+      { token, newPassword }
+    );
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: unknown) {
+    console.error('Reset password failed:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Reset password failed';
+    const apiError = (error as { response?: { data?: { message?: string } } })
+      ?.response?.data?.message;
+    return {
+      success: false,
+      error: apiError || errorMessage,
+    };
   }
 };
 

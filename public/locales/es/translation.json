@@ -21,7 +21,18 @@
         "googleError": "Error al iniciar sesión con Google. Por favor inténtalo de nuevo.",
         "facebookSuccess": "¡Inicio de sesión con Facebook exitoso!",
         "facebookError": "Error al iniciar sesión con Facebook. Por favor inténtalo de nuevo.",
-        "emailNotVerified": "Tu correo electrónico no está verificado. Por favor, revisa tu bandeja de entrada y verifica tu correo antes de iniciar sesión."
+        "emailNotVerified": "Tu correo electrónico no está verificado. Por favor, revisa tu bandeja de entrada y verifica tu correo antes de iniciar sesión.",
+        "resetPasswordSuccess": "¡Contraseña restablecida exitosamente! Ahora puedes iniciar sesión con tu nueva contraseña.",
+        "resetPasswordError": "Error al restablecer la contraseña. Por favor inténtalo de nuevo.",
+        "invalidResetLink": "Enlace de restablecimiento inválido o expirado.",
+        "newPasswordLabel": "Nueva contraseña",
+        "newPasswordPlaceholder": "Ingresa tu nueva contraseña",
+        "confirmPasswordLabel": "Confirmar contraseña",
+        "confirmPasswordPlaceholder": "Confirma tu nueva contraseña",
+        "passwordMismatch": "Las contraseñas no coinciden",
+        "resetPasswordButton": "Restablecer contraseña",
+        "backToLogin": "Volver al inicio de sesión",
+        "rememberPassword": "¿Recuerdas tu contraseña?"
     },
     "SignUp": {
         "emailInvalid": "Por favor ingresa una dirección de correo válida.",
@@ -79,7 +90,7 @@
         "email": "Correo electrónico",
         "emailPlaceholder": "Hola@ejemplo.com",
         "security": "Seguridad",
-        "withPassword": "Con contraseña",
+        "withPassword": "Restablecer contraseña",
         "configure2FA": "Configurar 2FA",
         "accountRole": "Rol de cuenta",
         "userType": "Tu tipo de usuario",

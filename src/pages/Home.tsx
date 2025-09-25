@@ -134,7 +134,7 @@ export default function Home({ role = 'User' }: HomeProps) {
   const MapClickHandler = () => {
     useMapEvents({
       click: async (e) => {
-        if (isAddingMarker && user?.role !== 'Admin') {
+        if (isAddingMarker && user?.role !== 'Admin' && createReportModalOpen) {
           const { lat, lng } = e.latlng;
 
           const newMarker = {
@@ -217,13 +217,10 @@ export default function Home({ role = 'User' }: HomeProps) {
   };
 
   const handleCreateModalToggle = () => {
-    if (!tempUserMarker) {
-      setShowAlert(true);
-      setFabOpen(false);
-    } else {
-      setSelectedMode('drag');
-      setCreateReportModalOpen(true);
-    }
+    setSelectedMode('drag');
+    setCreateReportModalOpen(true);
+    setShowAlert(false);
+    setFabOpen(false);
   };
 
   useEffect(() => {
@@ -237,7 +234,9 @@ export default function Home({ role = 'User' }: HomeProps) {
 
   useEffect(() => {
     if (user?.role === 'Admin') {
+      console.log('fetching markers');
       fetchMarkers();
+      console.log('adminMarkers : ', adminMarkers);
     } else if (user?.id) {
       fetchUserMarkers(user.id);
     }

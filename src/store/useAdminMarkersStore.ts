@@ -28,6 +28,7 @@ export const useAdminMarkersStore = create<AdminMarkersState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await getReports();
+      console.log('fetched markers : ', res);
       if (res.success && res.data) {
         const markers = res.data.map((record) => ({
           ...record,

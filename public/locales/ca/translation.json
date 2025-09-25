@@ -21,7 +21,18 @@
     "googleError": "Error en iniciar la sessió amb Google. Si us plau, torna-ho a intentar.",
     "facebookSuccess": "Inici de sessió amb Facebook correcte!",
     "facebookError": "Error en iniciar la sessió amb Facebook. Si us plau, torna-ho a intentar.",
-    "emailNotVerified": "El teu correu electrònic no està verificat. Si us plau, revisa la teva safata d'entrada i verifica el teu correu abans d'iniciar sessió."
+    "emailNotVerified": "El teu correu electrònic no està verificat. Si us plau, revisa la teva safata d'entrada i verifica el teu correu abans d'iniciar sessió.",
+    "resetPasswordSuccess": "Contrasenya restablida correctament! Ara pots iniciar sessió amb la teva nova contrasenya.",
+    "resetPasswordError": "Error en restablir la contrasenya. Si us plau, torna-ho a intentar.",
+    "invalidResetLink": "Enllaç de restabliment invàlid o caducat.",
+    "newPasswordLabel": "Nova contrasenya",
+    "newPasswordPlaceholder": "Introdueix la teva nova contrasenya",
+    "confirmPasswordLabel": "Confirma la contrasenya",
+    "confirmPasswordPlaceholder": "Confirma la teva nova contrasenya",
+    "passwordMismatch": "Les contrasenyes no coincideixen",
+    "resetPasswordButton": "Restablir contrasenya",
+    "backToLogin": "Tornar a iniciar sessió",
+    "rememberPassword": "Recordes la teva contrasenya?"
   },
   "SignUp": {
     "emailInvalid": "Si us plau, introdueix una adreça de correu electrònic vàlida.",
@@ -79,7 +90,7 @@
     "email": "Correu electrònic",
     "emailPlaceholder": "Hola@exemple.com",
     "security": "Seguretat",
-    "withPassword": "Amb contrasenya",
+    "withPassword": "Restablecer contrasenya",
     "configure2FA": "Configurar 2FA",
     "accountRole": "Rol de compte",
     "userType": "El teu tipus d'usuari",

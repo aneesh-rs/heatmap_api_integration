@@ -10,6 +10,7 @@ import { useAuth } from './context/AuthContext';
 import LoaderScreen from './pages/LoaderScreen';
 import Layout from './pages/Layout';
 import VerifyEmail from './pages/VerifyEmail';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   const { loading } = useAuth();
@@ -26,6 +27,7 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/verify-email' element={<VerifyEmail />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
       </Routes>
     </>
   );

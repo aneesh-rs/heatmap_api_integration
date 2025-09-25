@@ -15,6 +15,8 @@ export interface ApiResponse<T> {
 export const getReports = async (): Promise<ApiResponse<ApiReport[]>> => {
   try {
     const res = await axiosClient.get<ApiReport[]>('/reports');
+    console.log('res.data : ', res.data);
+
     return { success: true, data: res.data };
   } catch (error: unknown) {
     const apiError = (error as { response?: { data?: { message?: string } } })
