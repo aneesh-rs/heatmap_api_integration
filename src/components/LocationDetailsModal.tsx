@@ -80,7 +80,7 @@ const LocationDetailsModal = ({
     console.log('currentReport : ', currentReport);
 
     const res = await updateReportStatus(
-      currentReport._id as string,
+      currentReport.id as string,
       currentStatus
     );
     if (res.success) {

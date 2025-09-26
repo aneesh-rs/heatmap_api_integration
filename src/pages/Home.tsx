@@ -236,11 +236,10 @@ export default function Home({ role = 'User' }: HomeProps) {
     if (user?.role === 'Admin') {
       console.log('fetching markers');
       fetchMarkers();
-      console.log('adminMarkers : ', adminMarkers);
     } else if (user?.id) {
       fetchUserMarkers(user.id);
     }
-  }, [user?.role, user?.id, fetchMarkers, fetchUserMarkers]);
+  }, [user?.role, user?.id]);
 
   if (user?.role === 'User' && role === 'Admin') {
     return <UnauthorizedAccess isOpen={true} />;
@@ -283,6 +282,7 @@ export default function Home({ role = 'User' }: HomeProps) {
     data.lon,
     normalizeFrequency(data.frequency) * 100,
   ]);
+  console.log('markersToShow : ', markersToShow);
 
   if (!user) {
     return <Navigate to={'/login'} />;
