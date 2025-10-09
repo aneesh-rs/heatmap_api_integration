@@ -10,6 +10,7 @@ import { signUp } from '../services/auth';
 import toast from 'react-hot-toast';
 import Loader from '../components/Loader';
 import { useNavigate } from 'react-router-dom';
+import SocialLoginButtons from '@/components/SocialLoginButtons';
 // Social logins removed during API migration
 
 type FormData = {
@@ -204,7 +205,7 @@ export default function SignUp() {
           >
             {loading ? <Loader /> : t('signupButton')}
           </button>
-          {/* Social logins temporarily disabled during API migration */}
+          <SocialLoginButtons />
         </div>
       </form>
     </div>

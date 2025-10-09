@@ -25,7 +25,8 @@ export default function MarkerClusterOverlay({
   const [clusteredItems, setClusteredItems] = useState<
     (AdminMarker | MarkerCluster)[]
   >([]);
-  const { selectedDistricts, interestZone } = useFilterDistrictStore();
+  const { selectedDistricts, interestZone, reportCount } =
+    useFilterDistrictStore();
   const polygons: PolygonData[] =
     interestZone === 'City' ? polygons2 : polygons1;
 
@@ -61,8 +62,29 @@ export default function MarkerClusterOverlay({
     // If no districts are selected, show all markers (filteredMarkers remains unchanged)
 
     const clustered = clusterMarkers(filteredMarkers, currentZoom);
-    setClusteredItems(clustered);
-  }, [markers, currentZoom, selectedDistricts, interestZone, polygons]);
+
+    // Apply minimum group size filter from reportCount
+    let filteredClustered = clustered;
+    if (reportCount !== 'All') {
+      const minCount = parseInt(reportCount, 10) || 1;
+      filteredClustered = clustered.filter((item) => {
+        if (isCluster(item)) {
+          return item.count >= minCount;
+        }
+        // Hide individual markers unless threshold is 1
+        return minCount <= 1;
+      });
+    }
+
+    setClusteredItems(filteredClustered);
+  }, [
+    markers,
+    currentZoom,
+    selectedDistricts,
+    interestZone,
+    polygons,
+    reportCount,
+  ]);
 
   return (
     <>

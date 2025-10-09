@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { createInvitation } from '../services/invitations';
-import { fetchUserProfile, updateUserProfile } from '../services/auth';
 import { User } from '../types';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -181,7 +180,8 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
 
   const handleRoleChange = async (id: string, newRole: 'Admin' | 'User') => {
     // TODO: Implement user role update via API
-    // This would require a PUT /users/{id}/role endpoint
+    console.log(id, newRole);
+
     toast.error('User role update not yet implemented via API');
   };
 

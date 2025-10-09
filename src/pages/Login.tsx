@@ -12,6 +12,7 @@ import Loader from '../components/Loader';
 import { useAuth } from '../context/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
 import ForgotPasswordModal from '../components/ForgotPassword';
+import SocialLoginButtons from '@/components/SocialLoginButtons';
 
 type FormData = {
   email: string;
@@ -199,8 +200,8 @@ export default function Login() {
           </button>
           {/* Social logins temporarily disabled during API migration */}
         </div>
+        <SocialLoginButtons />
       </form>
-
       <ForgotPasswordModal
         isOpen={showForgotPassword}
         onClose={() => setShowForgotPassword(false)}

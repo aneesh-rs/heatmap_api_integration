@@ -23,7 +23,7 @@ export const useUserMarkersStore = create<UserMarkersState>((set) => ({
   isLoading: false,
   error: null,
 
-  fetchUserMarkers: async (userId: string) => {
+  fetchUserMarkers: async () => {
     set({ isLoading: true, error: null });
     try {
       const res = await getReports();

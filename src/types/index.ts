@@ -40,8 +40,8 @@ export interface User {
   email: string;
   birthday: string;
   name: string;
-  firstSurname: string;
-  secondSurname: string;
+  firstSurname?: string;
+  secondSurname?: string;
   photoURL?: string;
 }
 

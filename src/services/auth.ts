@@ -1,5 +1,5 @@
 import axiosClient from '../apiClient';
-import { User } from '../types';
+import { Roles, User } from '../types';
 
 export interface LoginRequest {
   email: string;
@@ -57,6 +57,17 @@ export interface ApiUserProfile {
   emailVerified: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface GoogleLoginResponse {
+  access_token: string;
+  user: { id: string; email: string; role: Roles };
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
 }
 
 // Login function
@@ -199,8 +210,8 @@ export const fetchUserProfile = async (): Promise<ApiResponse<User>> => {
 export interface UpdateProfileRequest {
   email: string;
   name: string;
-  firstSurname: string;
-  secondSurname: string;
+  firstSurname?: string;
+  secondSurname?: string;
   birthday: string;
   photoURL: string;
 }
@@ -304,4 +315,40 @@ export const resetPassword = async (
 export const isAuthenticated = (): boolean => {
   const token = localStorage.getItem('access_token');
   return !!token;
+};
+
+export const googleLogin = async (
+  googleToken: string,
+  invitationId?: string | null
+): Promise<ApiResponse<GoogleLoginResponse>> => {
+  try {
+    console.log('trying with invitation id : ', invitationId);
+    const response = await axiosClient.post<GoogleLoginResponse>(
+      '/auth/google-login',
+      { idToken: googleToken, invitationId }
+    );
+
+    const { access_token } = response.data;
+
+    // Store token in localStorage (same as email/password login)
+    localStorage.setItem('access_token', access_token);
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: unknown) {
+    console.error('Google login failed:', error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : 'Google login failed';
+
+    const apiError = (error as { response?: { data?: { message?: string } } })
+      ?.response?.data?.message;
+
+    return {
+      success: false,
+      error: apiError || errorMessage,
+    };
+  }
 };

@@ -28,9 +28,3 @@ export const createInvitation = async (
     return { success: false, error: apiError || 'Failed to create invitation' };
   }
 };
-
-export const generateInviteLink = async (role: Roles): Promise<string> => {
-  // For now, we'll need the current user's ID from context
-  // This should be called from a component that has access to user context
-  throw new Error('generateInviteLink should be called with user context');
-};

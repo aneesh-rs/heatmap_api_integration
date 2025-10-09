@@ -27,7 +27,6 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { Roles, User as AppUser } from '../types';
 import { query, where, limit } from 'firebase/firestore';
 
 export async function fetchUserData(uid: string) {

@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Polygon } from "react-leaflet";
-import useFilterDistrictStore from "../store/useFilterDistrictStore";
-import { polygons1, polygons2 } from "../constants";
-import { PathOptions } from "leaflet";
-import { useMapModeStore } from "../store/useMapModeStore";
+import { useState } from 'react';
+import { Polygon } from 'react-leaflet';
+import useFilterDistrictStore from '../store/useFilterDistrictStore';
+import { polygons1, polygons2 } from '../constants';
+import { PathOptions } from 'leaflet';
+import { useMapModeStore } from '../store/useMapModeStore';
 
 export default function PolygonOverlay({
   onSelectPolygon,
@@ -11,12 +11,17 @@ export default function PolygonOverlay({
   onSelectPolygon?: (id: string) => void;
 }) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const { selectedId, setSelectedId, interestZone, selectedDistricts } =
-    useFilterDistrictStore();
+  const {
+    selectedId,
+    setSelectedId,
+    interestZone,
+    selectedDistricts,
+    toggleDistrict,
+  } = useFilterDistrictStore();
   const polygons =
-    interestZone === "Neighborhoods"
+    interestZone === 'Neighborhoods'
       ? polygons2
-      : interestZone === "Districts"
+      : interestZone === 'Districts'
       ? polygons1
       : [];
   const { setMode } = useMapModeStore();
@@ -28,7 +33,7 @@ export default function PolygonOverlay({
         const isSelected = selectedId === id;
 
         // Extract district number from polygon ID (e.g., "district-1" -> 1)
-        const districtNumber = parseInt(id.replace("district-", ""));
+        const districtNumber = parseInt(id.replace('district-', ''));
         const isDistrictSelected = selectedDistricts.includes(districtNumber);
 
         const pathOptions: PathOptions = {
@@ -55,9 +60,10 @@ export default function PolygonOverlay({
               mouseout: () => setHoveredId(null),
               click: () => {
                 setSelectedId(id);
+                toggleDistrict(parseInt(id.replace('district-', '')));
                 if (onSelectPolygon) {
                   onSelectPolygon(id);
-                  setMode("filterDistrict");
+                  setMode('filterDistrict');
                 }
               },
             }}
