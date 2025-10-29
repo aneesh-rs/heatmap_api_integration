@@ -3,11 +3,18 @@ import { useMap } from 'react-leaflet';
 import 'leaflet.heat';
 
 interface HeatmapProps {
-  points: [number, number, number?][]; // lat, lng, intensity(optional)
+  points: [number, number, number?][]; // [lat, lng, intensity]
   visible: boolean;
+  gradient?: Record<number, string>; // keys 0..1
+  max?: number; // default based on points
 }
 
-const HeatmapLayer: React.FC<HeatmapProps> = ({ points, visible }) => {
+const HeatmapLayer: React.FC<HeatmapProps> = ({
+  points,
+  visible,
+  gradient,
+  max,
+}) => {
   const map = useMap();
 
   useEffect(() => {
@@ -17,6 +24,8 @@ const HeatmapLayer: React.FC<HeatmapProps> = ({ points, visible }) => {
       radius: 15,
       blur: 15,
       maxZoom: 17,
+      gradient,
+      max,
     });
 
     if (visible) {
@@ -26,7 +35,7 @@ const HeatmapLayer: React.FC<HeatmapProps> = ({ points, visible }) => {
     return () => {
       map.removeLayer(heatLayer);
     };
-  }, [map, points, visible]);
+  }, [map, points, visible, gradient, max]);
 
   return null;
 };
