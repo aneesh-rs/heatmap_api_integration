@@ -326,7 +326,7 @@ export default function FilterDistrict() {
                   )}
                 </Pie>
               </PieChart>
-              <div className='absolute top-1/3 left-1/2 flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2 text-center'>
+              <div className='absolute top-[25%] left-1/2 flex flex-col items-center justify-center transform -translate-x-1/2 -translate-y-1/2 text-center'>
                 <PiUserCircleFill size={30} />
                 <div className='text-gray-500 text-sm'>
                   {t('FilterDistrict.averageCitizens')}

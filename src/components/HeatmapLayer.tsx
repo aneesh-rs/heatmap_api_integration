@@ -21,8 +21,8 @@ const HeatmapLayer: React.FC<HeatmapProps> = ({
     if (!map) return;
 
     const heatLayer = (window as any).L.heatLayer(points, {
-      radius: 15,
-      blur: 15,
+      radius: 25,
+      blur: 20,
       maxZoom: 17,
       gradient,
       max,
