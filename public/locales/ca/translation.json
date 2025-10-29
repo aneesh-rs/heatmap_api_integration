@@ -106,6 +106,8 @@
     "title": "Abans de crear un informe, selecciona la teva ubicació",
     "instructions": "Utilitza el teu cursor per seleccionar la ubicació exacta de la teva incidència o,",
     "trackLocation": "rastreja la teva ubicació aquí",
+    "enterName": "Introdueix el teu nom",
+    "namePlaceholder": "Introdueix el teu nom complet",
     "orTypeDirection": "O escriu l'adreça:",
     "locationPlaceholder": "Carrer Exemple, 123, 08130, Sta. Perpètua de...",
     "selectInMap": "Seleccionar al Mapa"

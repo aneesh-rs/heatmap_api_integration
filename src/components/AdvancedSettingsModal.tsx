@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createInvitation } from "../services/invitations";
 import { User } from "../types";
 import toast from "react-hot-toast";
@@ -170,7 +170,7 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
   };
 
   const handleDone = () => {
-    console.log("Done clicked");
+    onClose();
   };
   const fetchAllUserData = async () => {
     // TODO: Implement GET /users endpoint in backend

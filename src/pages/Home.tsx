@@ -1,49 +1,49 @@
-import { MapContainer, TileLayer, useMapEvents } from 'react-leaflet';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { LatLngTuple, Map } from 'leaflet';
-import { useAuth } from '../context/AuthContext';
-import CreateReport from '../components/CreateReport';
-import Settings from '../components/Settings';
-import { AudioType, User } from '../types';
-import CountrySelector from '../components/CountrySelector';
-import { cities } from '../constants';
-import ToolTip from '../components/ToolTip';
-import OptionsMenu from '../components/OptionsMenu';
-import NoLocationAlert from '../components/NoLocationAlert';
-import { Navigate } from 'react-router-dom';
-import UnauthorizedAccess from './UnauthorizedAcessPage';
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { LatLngTuple, Map } from "leaflet";
+import { useAuth } from "../context/AuthContext";
+import CreateReport from "../components/CreateReport";
+import Settings from "../components/Settings";
+import { AudioType, User } from "../types";
+import CountrySelector from "../components/CountrySelector";
+import { cities } from "../constants";
+import ToolTip from "../components/ToolTip";
+import OptionsMenu from "../components/OptionsMenu";
+import NoLocationAlert from "../components/NoLocationAlert";
+import { Navigate } from "react-router-dom";
+import UnauthorizedAccess from "./UnauthorizedAcessPage";
 import {
   formatAddress,
   getFilteredPoints,
   MarkerCluster,
   normalizeFrequency,
   reverseGeocodeWithNumber,
-} from '../utils';
-import LocationDetailsModal from '../components/LocationDetailsModal';
+} from "../utils";
+import LocationDetailsModal from "../components/LocationDetailsModal";
 import {
   useAdminMarkersStore,
   AdminMarker,
-} from '../store/useAdminMarkersStore';
-import { useUserMarkersStore, UserMarker } from '../store/useUserMarkersStore';
-import MarkerClusterOverlay from '../components/MarkerClusterOverlay';
-import ImportDataModal from '../components/ImportDataModal';
-import Filters from '../components/Filters';
-import { useMapModeStore } from '../store/useMapModeStore';
-import FilterDistrict from '../components/FliterDistrict';
-import StreetSearchMarker from '../components/StreeSearchMarker';
+} from "../store/useAdminMarkersStore";
+import { useUserMarkersStore, UserMarker } from "../store/useUserMarkersStore";
+import MarkerClusterOverlay from "../components/MarkerClusterOverlay";
+import ImportDataModal from "../components/ImportDataModal";
+import Filters from "../components/Filters";
+import { useMapModeStore } from "../store/useMapModeStore";
+import FilterDistrict from "../components/FliterDistrict";
+import StreetSearchMarker from "../components/StreeSearchMarker";
 
-import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import PolygonOverlay from '../components/PolygonOverlay';
-import { useCityStore } from '../store/useCityStore';
-import MapViewUpdater from '../components/MapViewUpdater';
-import UploadedDataPoints from '../components/UploadedDataPoints';
-import ZoomController from '../components/ZoomController';
-import MapRef from '../components/MapRef';
-import { useModalStore } from '../store/useModalStore';
-import HeatmapLayer from '../components/HeatmapLayer';
-import { useHeatmapStore } from '@/store/useHeatmapStore';
-import useFilterDistrictStore from '@/store/useFilterDistrictStore';
+import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
+import PolygonOverlay from "../components/PolygonOverlay";
+import { useCityStore } from "../store/useCityStore";
+import MapViewUpdater from "../components/MapViewUpdater";
+import UploadedDataPoints from "../components/UploadedDataPoints";
+import ZoomController from "../components/ZoomController";
+import MapRef from "../components/MapRef";
+import { useModalStore } from "../store/useModalStore";
+import HeatmapLayer from "../components/HeatmapLayer";
+import { useHeatmapStore } from "@/store/useHeatmapStore";
+import useFilterDistrictStore from "@/store/useFilterDistrictStore";
 
 interface LocationData {
   lat: number;
@@ -52,14 +52,14 @@ interface LocationData {
 }
 
 interface HomeProps {
-  role?: User['role'];
+  role?: User["role"];
 }
 
 type LocationReport = (AdminMarker | UserMarker) & {
-  reportStatus: 'Pending' | 'New' | 'Closed';
+  reportStatus: "Pending" | "New" | "Closed";
 };
 
-export default function Home({ role = 'User' }: HomeProps) {
+export default function Home({ role = "User" }: HomeProps) {
   const zoomInRef = useRef<() => void>(() => {});
   const zoomOutRef = useRef<() => void>(() => {});
   const mapRef = useRef<Map | null>(null);
@@ -70,8 +70,10 @@ export default function Home({ role = 'User' }: HomeProps) {
   const {
     createReportModalOpen,
     locationDetailsModalOpen,
+    noLocationAlertOpen,
     setCreateReportModalOpen,
     setLocationDetailsModalOpen,
+    setNoLocationAlertOpen,
     fabOpen,
     setFabOpen,
   } = useModalStore();
@@ -90,8 +92,9 @@ export default function Home({ role = 'User' }: HomeProps) {
   const [selectedLocation, setSelectedLocation] = useState<LocationData>({
     lat: 0,
     lng: 0,
-    address: '',
+    address: "",
   });
+  const [userName, setUserName] = useState("");
 
   const handleStreetSelected = (location: {
     lat: number;
@@ -117,7 +120,7 @@ export default function Home({ role = 'User' }: HomeProps) {
     }
 
     // Automatically open the create report modal
-    setSelectedMode('drag');
+    setSelectedMode("drag");
     setCreateReportModalOpen(true);
   };
 
@@ -134,7 +137,7 @@ export default function Home({ role = 'User' }: HomeProps) {
   const MapClickHandler = () => {
     useMapEvents({
       click: async (e) => {
-        if (isAddingMarker && user?.role !== 'Admin' && createReportModalOpen) {
+        if (isAddingMarker && createReportModalOpen) {
           const { lat, lng } = e.latlng;
 
           const newMarker = {
@@ -149,7 +152,7 @@ export default function Home({ role = 'User' }: HomeProps) {
               address: formatAddress(data.address),
             });
           } catch (err) {
-            console.error('Reverse geocoding failed:', err);
+            console.error("Reverse geocoding failed:", err);
           }
         }
         setIsAddingMarker(true);
@@ -159,7 +162,7 @@ export default function Home({ role = 'User' }: HomeProps) {
   };
 
   const handleMarkerClick = (id: string) => {
-    if (user?.role === 'Admin') {
+    if (user?.role === "Admin") {
       const marker = adminMarkers.find((m) => m.id === id);
       if (marker) {
         const reportsAtLocation = adminMarkers
@@ -168,7 +171,7 @@ export default function Home({ role = 'User' }: HomeProps) {
               m.location.lat === marker.location.lat &&
               m.location.lng === marker.location.lng
           )
-          .filter((m) => m.reportStatus !== 'Closed');
+          .filter((m) => m.reportStatus !== "Closed");
 
         setLocationReports(reportsAtLocation);
         setActiveMarker(marker);
@@ -183,7 +186,7 @@ export default function Home({ role = 'User' }: HomeProps) {
               m.location.lat === marker.location.lat &&
               m.location.lng === marker.location.lng
           )
-          .filter((m) => m.reportStatus !== 'Closed');
+          .filter((m) => m.reportStatus !== "Closed");
 
         setLocationReports(reportsAtLocation);
         setActiveMarker(marker);
@@ -196,7 +199,7 @@ export default function Home({ role = 'User' }: HomeProps) {
   };
 
   const handleClusterClick = (cluster: MarkerCluster) => {
-    if (user?.role === 'Admin') {
+    if (user?.role === "Admin") {
       // Use the first marker in the cluster as the active marker
       const firstMarker = cluster.markers[0];
       if (firstMarker) {
@@ -217,54 +220,85 @@ export default function Home({ role = 'User' }: HomeProps) {
   };
 
   const handleCreateModalToggle = () => {
-    setSelectedMode('drag');
-    setCreateReportModalOpen(true);
+    setSelectedMode("drag");
+    setNoLocationAlertOpen(true);
     setShowAlert(false);
     setFabOpen(false);
   };
 
+  const handleNameEntered = (name: string) => {
+    setUserName(name);
+    setNoLocationAlertOpen(false);
+    setCreateReportModalOpen(true);
+  };
+
   useEffect(() => {
-    if (selectedMode != 'drag') {
+    if (selectedMode != "drag") {
       setFabOpen(false);
       setCreateReportModalOpen(false);
+      setNoLocationAlertOpen(false);
     } else {
       setCoordinates([]);
     }
   }, [selectedMode]);
 
   useEffect(() => {
-    if (user?.role === 'Admin') {
-      console.log('fetching markers');
+    if (user?.role === "Admin") {
+      console.log("fetching markers");
       fetchMarkers();
     } else if (user?.id) {
       fetchUserMarkers(user.id);
     }
   }, [user?.role, user?.id]);
 
-  if (user?.role === 'User' && role === 'Admin') {
+  // Handle selected marker from dashboard table
+  useEffect(() => {
+    const selectedMarkerId = localStorage.getItem("selectedMarkerId");
+    if (selectedMarkerId && adminMarkers.length > 0) {
+      const marker = adminMarkers.find((m) => m.id === selectedMarkerId);
+      if (marker) {
+        const reportsAtLocation = adminMarkers
+          .filter(
+            (m) =>
+              m.location.lat === marker.location.lat &&
+              m.location.lng === marker.location.lng
+          )
+          .filter((m) => m.reportStatus !== "Closed");
+
+        setLocationReports(reportsAtLocation);
+        setActiveMarker(marker);
+        setLocationDetailsModalOpen(true);
+
+        // Clear the selected marker ID from localStorage
+        localStorage.removeItem("selectedMarkerId");
+      }
+    }
+  }, [adminMarkers, setLocationDetailsModalOpen]);
+
+  if (user?.role === "User" && role === "Admin") {
     return <UnauthorizedAccess isOpen={true} />;
   }
 
   const markersToShow: (AdminMarker | UserMarker)[] =
-    user?.role === 'Admin'
+    user?.role === "Admin"
       ? adminMarkers
       : [
           ...userMarkers,
           ...(tempUserMarker
             ? [
                 {
-                  id: 'temp',
-                  reportStatus: 'New' as const,
+                  id: "temp",
+                  reportStatus: "New" as const,
                   position: tempUserMarker.position,
-                  feeling: 'happy' as const,
-                  category: 'rubbish' as const,
-                  reportText: '',
-                  firstName: '',
-                  lastName: '',
+                  feeling: "happy" as const,
+                  category: "rubbish" as const,
+                  reportText: "",
+                  firstName: "",
+                  lastName: "",
                   location: {
                     lat: tempUserMarker.position[0],
                     lng: tempUserMarker.position[1],
-                    address: '',
+                    address: "",
                   },
                 },
               ]
@@ -282,36 +316,36 @@ export default function Home({ role = 'User' }: HomeProps) {
     data.lon,
     normalizeFrequency(data.frequency) * 100,
   ]);
-  console.log('markersToShow : ', markersToShow);
+  console.log("markersToShow : ", markersToShow);
 
   if (!user) {
-    return <Navigate to={'/login'} />;
+    return <Navigate to={"/login"} />;
   }
 
   return (
-    <div className='relative w-screen h-screen overflow-hidden'>
+    <div className="relative w-screen h-screen overflow-hidden">
       <MapContainer
         center={selectedCity.center}
         zoom={selectedCity.zoom}
         scrollWheelZoom
         zoomControl={false}
-        className='w-full h-full z-0'
-        style={{ position: 'absolute', top: 0, left: 0 }}
+        className="w-full h-full z-0"
+        style={{ position: "absolute", top: 0, left: 0 }}
       >
         <TileLayer
-          url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-          attribution='&copy; OpenStreetMap contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; OpenStreetMap contributors"
         />
         <HeatmapLayer points={heatmapPoints} visible={heatmapActive} />
         <MapViewUpdater center={selectedCity.center} zoom={selectedCity.zoom} />
         <MapRef onMapReady={(map) => (mapRef.current = map)} />
-        {(selectedMode === 'filterDistrict' || selectedMode === 'filter') &&
-          selectedCity.value === 'terrassa' && (
+        {(selectedMode === "filterDistrict" || selectedMode === "filter") &&
+          selectedCity.value === "terrassa" && (
             <PolygonOverlay
-              onSelectPolygon={(id) => console.log('Selected polygon:', id)}
+              onSelectPolygon={(id) => console.log("Selected polygon:", id)}
             />
           )}
-        {selectedMode === 'import' && (
+        {selectedMode === "import" && (
           <UploadedDataPoints points={coordinates as LatLngTuple[]} />
         )}
 
@@ -358,15 +392,27 @@ export default function Home({ role = 'User' }: HomeProps) {
         onSelectLocation={() => setShowAlert(false)}
         onStreetSelected={handleStreetSelected}
       />
+      <NoLocationAlert
+        isOpen={noLocationAlertOpen}
+        onClose={() => setNoLocationAlertOpen(false)}
+        onSelectLocation={() => {
+          setNoLocationAlertOpen(false);
+          setCreateReportModalOpen(true);
+        }}
+        onStreetSelected={handleStreetSelected}
+        onNameEntered={handleNameEntered}
+      />
       <CreateReport
         isOpen={createReportModalOpen}
         setIsOpen={setCreateReportModalOpen}
         initialLocation={selectedLocation}
+        userName={userName}
         onReportCreated={() => {
-          if (user?.id && user?.role !== 'Admin') {
+          if (user?.id && user?.role !== "Admin") {
             fetchUserMarkers(user.id);
           }
           setTempUserMarker(null);
+          setUserName("");
         }}
       />
       {activeMarker && (
