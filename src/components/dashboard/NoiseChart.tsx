@@ -1,10 +1,8 @@
 import React, { useMemo } from 'react';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
   Tooltip,
   Legend,
   ResponsiveContainer,
@@ -15,66 +13,32 @@ import { FiBarChart } from 'react-icons/fi';
 const NoiseChart: React.FC = () => {
   const { data: heatMapData } = useHeatmapStore();
 
-  // Process data to group by year and category
-  const chartData = useMemo(() => {
+  // Process data to group by noise type (category)
+  const pieData = useMemo(() => {
     if (!heatMapData || heatMapData.length === 0) return [];
 
-    // Group data by year and category
-    const yearCategoryMap = new Map<
+    const categoryMap = new Map<
       string,
-      Map<string, { count: number; totalFrequency: number }>
+      { count: number; totalFrequency: number }
     >();
 
     heatMapData.forEach((item) => {
-      const year = new Date(item.date).getFullYear().toString();
       const category = item.audioType.toLowerCase();
-
-      if (!yearCategoryMap.has(year)) {
-        yearCategoryMap.set(year, new Map());
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, { count: 0, totalFrequency: 0 });
       }
-
-      const yearData = yearCategoryMap.get(year)!;
-      if (!yearData.has(category)) {
-        yearData.set(category, { count: 0, totalFrequency: 0 });
-      }
-
-      const categoryData = yearData.get(category)!;
-      categoryData.count += 1;
-      categoryData.totalFrequency += item.frequency;
+      const data = categoryMap.get(category)!;
+      data.count += 1;
+      data.totalFrequency += item.frequency;
     });
 
-    // Get all unique categories
-    const allCategories = new Set<string>();
-    yearCategoryMap.forEach((yearData) => {
-      yearData.forEach((_, category) => {
-        allCategories.add(category);
-      });
-    });
-
-    // Get all years
-    const years = Array.from(yearCategoryMap.keys()).sort();
-
-    // Create chart data structure
-    const result = years.map((year) => {
-      const yearData = yearCategoryMap.get(year)!;
-      const dataPoint: any = { year };
-
-      allCategories.forEach((category) => {
-        const categoryData = yearData.get(category);
-        if (categoryData) {
-          // Use average frequency for the bar height
-          dataPoint[category] = Math.round(
-            categoryData.totalFrequency / categoryData.count
-          );
-        } else {
-          dataPoint[category] = 0;
-        }
-      });
-
-      return dataPoint;
-    });
-
-    return result;
+    // Use average frequency as the value to remain consistent with previous chart
+    return Array.from(categoryMap.entries()).map(
+      ([name, { count, totalFrequency }]) => ({
+        name,
+        value: Math.round(totalFrequency / count),
+      })
+    );
   }, [heatMapData]);
 
   // Generate colors for categories
@@ -110,30 +74,26 @@ const NoiseChart: React.FC = () => {
     return colorMap;
   }, [heatMapData]);
 
-  const categories = useMemo(() => {
-    if (!heatMapData || heatMapData.length === 0) return [];
-    return Array.from(
-      new Set(heatMapData.map((item) => item.audioType.toLowerCase()))
-    );
-  }, [heatMapData]);
+  // Categories are derived from pieData when rendering; no separate memo needed
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; fill: string }>;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className='bg-white p-3 shadow-lg rounded-lg border border-gray-200'>
-          <p className='font-bold text-gray-800'>Year: {label}</p>
-          {payload.map((pld: any, index: number) => (
-            <div
-              key={index}
-              style={{ color: pld.fill }}
-              className='flex items-center gap-2'
-            >
+          {payload.map((pld, index: number) => (
+            <div key={index} className='flex items-center gap-2'>
               <div
                 className='w-3 h-3 rounded-full'
                 style={{ backgroundColor: pld.fill }}
               ></div>
-              <span className='capitalize'>
-                {pld.dataKey}: {pld.value} dB
+              <span className='capitalize text-gray-800 font-semibold'>
+                {pld.name}: {pld.value} dB
               </span>
             </div>
           ))}
@@ -143,24 +103,7 @@ const NoiseChart: React.FC = () => {
     return null;
   };
 
-  const renderLegend = (props: any) => {
-    const { payload } = props;
-    return (
-      <ul className='flex flex-wrap justify-center items-center gap-4 mt-4'>
-        {payload.map((entry: any, index: number) => (
-          <li key={`item-${index}`} className='flex items-center gap-2'>
-            <span
-              className='w-3 h-3 rounded-full'
-              style={{ backgroundColor: entry.color }}
-            ></span>
-            <span className='text-gray-600 text-sm capitalize'>
-              {entry.value}
-            </span>
-          </li>
-        ))}
-      </ul>
-    );
-  };
+  // Use default legend rendering
 
   // Empty state
   if (!heatMapData || heatMapData.length === 0) {
@@ -169,7 +112,7 @@ const NoiseChart: React.FC = () => {
         <div className='w-full flex flex-col gap-4'>
           <div className='flex gap-4 items-center relative'>
             <h2 className='text-gray-400 font-bold text-2xl'>
-              Noise Data by Year and Category
+              Noise Levels by Noise Type
             </h2>
           </div>
         </div>
@@ -182,7 +125,7 @@ const NoiseChart: React.FC = () => {
             No Data Available
           </h3>
           <p className='text-sm text-gray-500 text-center max-w-sm'>
-            Upload some noise data to see the bar chart analysis here. Data will
+            Upload some noise data to see the pie chart analysis here. Data will
             appear once you import audio files or reports.
           </p>
           <div className='mt-4 flex items-center gap-2 text-xs text-gray-400'>
@@ -199,59 +142,33 @@ const NoiseChart: React.FC = () => {
       <div className='w-full flex flex-col gap-4'>
         <div className='flex gap-4 items-center relative'>
           <h2 className='text-gray-400 font-bold text-2xl'>
-            Noise Data by Year and Category
+            Noise Levels by Noise Type
           </h2>
         </div>
         <p className='text-sm text-gray-600'>
-          Average noise levels (dB) grouped by year and audio category
+          Average noise levels (dB) grouped by audio category
         </p>
       </div>
 
       <div className='bg-white rounded-lg border border-gray-200 p-4'>
         <ResponsiveContainer width='100%' height={400}>
-          <BarChart
-            data={chartData}
-            margin={{
-              top: 20,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-            barGap={6}
-          >
-            <CartesianGrid strokeDasharray='3 3' vertical={false} />
-            <XAxis
-              dataKey='year'
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              dy={10}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              label={{
-                value: 'Average dB',
-                angle: -90,
-                position: 'insideLeft',
-              }}
-            />
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ fill: 'rgba(239, 246, 255, 0.5)' }}
-            />
-            <Legend content={renderLegend} />
-            {categories.map((category) => (
-              <Bar
-                key={category}
-                dataKey={category}
-                fill={colors[category]}
-                radius={[4, 4, 0, 0]}
-                barSize={20}
-              />
-            ))}
-          </BarChart>
+          <PieChart>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend />
+            <Pie
+              data={pieData}
+              dataKey='value'
+              nameKey='name'
+              cx='50%'
+              cy='50%'
+              outerRadius={140}
+              label={({ name, value }) => `${name}: ${value} dB`}
+            >
+              {pieData.map((entry: { name: string; value: number }) => (
+                <Cell key={entry.name} fill={colors[entry.name]} />
+              ))}
+            </Pie>
+          </PieChart>
         </ResponsiveContainer>
       </div>
     </div>
