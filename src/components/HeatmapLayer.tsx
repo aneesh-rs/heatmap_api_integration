@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
+import * as L from 'leaflet';
 import 'leaflet.heat';
 
 interface HeatmapProps {
@@ -20,10 +21,12 @@ const HeatmapLayer: React.FC<HeatmapProps> = ({
   useEffect(() => {
     if (!map) return;
 
-    const heatLayer = (window as any).L.heatLayer(points, {
-      radius: 25,
-      blur: 20,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const heatLayer = (L as any).heatLayer(points, {
+      radius: 22,
+      blur: 18,
       maxZoom: 17,
+      minOpacity: 0.35,
       gradient,
       max,
     });

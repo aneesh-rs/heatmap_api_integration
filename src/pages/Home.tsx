@@ -314,7 +314,7 @@ export default function Home({ role = 'User' }: HomeProps) {
   ).map((data) => [
     data.lat,
     data.lon,
-    Math.max(10, normalizeFrequency(data.frequency) * 200),
+    0.4 + 0.6 * normalizeFrequency(data.frequency),
   ]);
   // Build a decibel-based gradient up to 80 dB (keys 0..1)
   const buildDbGradient = () => {
@@ -435,7 +435,7 @@ export default function Home({ role = 'User' }: HomeProps) {
           points={heatmapPoints}
           visible={heatmapActive}
           gradient={heatmapGradient}
-          max={200}
+          max={1}
         />
         <MapViewUpdater center={selectedCity.center} zoom={selectedCity.zoom} />
         <MapRef onMapReady={(map) => (mapRef.current = map)} />
