@@ -305,7 +305,18 @@ export default function Home({ role = 'User' }: HomeProps) {
             : []),
         ];
 
-  // Convert to [lat, lng, intensity]
+  // Convert to [lat, lng, intensity] with discrete color bins per frequency range
+  // Match the same bins used in FilterDistrict: <40, 40-45, 45-50, ..., 75-80
+  const stopsDb = [0, 40, 45, 50, 55, 60, 65, 70, 75, 80];
+  const quantizeFrequencyToStop = (f: number) => {
+    if (f < 40) return normalizeFrequency(40);
+    if (f >= 80) return normalizeFrequency(80);
+    // Snap to the lower bound of the bin: 40,45,50,...,75
+    const idx = Math.min(8, Math.max(1, 1 + Math.floor((f - 40) / 5)));
+    const stop = stopsDb[idx];
+    return normalizeFrequency(stop);
+  };
+
   const heatmapPoints: [number, number, number][] = getFilteredPoints(
     heatmapDataPoints,
     filter.mode,
@@ -314,93 +325,23 @@ export default function Home({ role = 'User' }: HomeProps) {
   ).map((data) => [
     data.lat,
     data.lon,
-    0.4 + 0.6 * normalizeFrequency(data.frequency),
+    quantizeFrequencyToStop(data.frequency),
   ]);
-  // Build a decibel-based gradient up to 80 dB (keys 0..1)
+  // Build a decibel-based gradient up to 80 dB (keys 0..1) with discrete colors per bin
   const buildDbGradient = () => {
-    const base = ['#AEE9FF', '#C5FF99', '#4CAF50']; // first three fixed
-    const hexToHsl = (hex: string) => {
-      const r = parseInt(hex.slice(1, 3), 16) / 255;
-      const g = parseInt(hex.slice(3, 5), 16) / 255;
-      const b = parseInt(hex.slice(5, 7), 16) / 255;
-      const max = Math.max(r, g, b),
-        min = Math.min(r, g, b);
-      let h = 0,
-        s = 0;
-      const l = (max + min) / 2;
-      const d = max - min;
-      if (d !== 0) {
-        s = d / (1 - Math.abs(2 * l - 1));
-        switch (max) {
-          case r:
-            h = ((g - b) / d) % 6;
-            break;
-          case g:
-            h = (b - r) / d + 2;
-            break;
-          default:
-            h = (r - g) / d + 4;
-        }
-        h = Math.round(h * 60);
-        if (h < 0) h += 360;
-      }
-      return { h, s, l };
-    };
-    const hslToHex = (h: number, s: number, l: number) => {
-      const c = (1 - Math.abs(2 * l - 1)) * s;
-      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-      const m = l - c / 2;
-      let r = 0,
-        g = 0,
-        b = 0;
-      if (0 <= h && h < 60) {
-        r = c;
-        g = x;
-        b = 0;
-      } else if (60 <= h && h < 120) {
-        r = x;
-        g = c;
-        b = 0;
-      } else if (120 <= h && h < 180) {
-        r = 0;
-        g = c;
-        b = x;
-      } else if (180 <= h && h < 240) {
-        r = 0;
-        g = x;
-        b = c;
-      } else if (240 <= h && h < 300) {
-        r = x;
-        g = 0;
-        b = c;
-      } else {
-        r = c;
-        g = 0;
-        b = x;
-      }
-      const toHex = (v: number) => {
-        const n = Math.round((v + m) * 255);
-        return n.toString(16).padStart(2, '0');
-      };
-      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    };
-    const buildPalette = (count: number) => {
-      const palette: string[] = [];
-      for (let i = 0; i < count; i++) {
-        if (i < base.length) {
-          palette.push(base[i]);
-        } else {
-          const { h, s, l } = hexToHsl('#4CAF50');
-          const steps = count - base.length;
-          const factor = (i - base.length + 1) / (steps + 1);
-          const newL = Math.max(0.25, l - factor * 0.35);
-          const newS = Math.min(1, s + factor * 0.1);
-          palette.push(hslToHex(h, newS, newL));
-        }
-      }
-      return palette;
-    };
-    const palette = buildPalette(9);
+    // Fixed palette aligned with FilterDistrict (low -> high)
+    const palette = [
+      '#0B3C5D', // <40 dark blue
+      '#1D70A2', // 40-45 blue
+      '#5BC0EB', // 45-50 light blue
+      '#2ECC71', // 50-55 green
+      '#F1C40F', // 55-60 yellow
+      '#F39C12', // 60-65 orange
+      '#E67E22', // 65-70 deep orange
+      '#E74C3C', // 70-75 red
+      '#8B0000', // 75-80 dark red
+    ];
+    // Same decibel stops used in quantization above
     const stopsDb = [0, 40, 45, 50, 55, 60, 65, 70, 75, 80];
     const gradient: Record<number, string> = {};
     gradient[0] = palette[0];
