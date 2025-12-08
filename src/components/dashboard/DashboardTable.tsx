@@ -49,6 +49,7 @@ import { useModalStore } from "../../store/useModalStore";
 import { updateReportStatus, deleteReport } from "../../services/reports";
 import { ReportStatus } from "../../types";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 // Types
 interface CitizenFeedback {
@@ -130,6 +131,7 @@ const getStatusBadge = (status: string) => {
 
 // Component
 export default function DashboardTable() {
+  const { t } = useTranslation();
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -223,7 +225,7 @@ export default function DashboardTable() {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 font-semibold text-gray-500 hover:bg-transparent"
           >
-            Direcció de la incidència
+            {t('Dashboard.Table.columns.incidentAddress')}
             {column.getIsSorted() === "asc" ? (
               <FiChevronUp className="ml-2 h-4 w-4 text-blue-600" />
             ) : // <LuArrowDown className="ml-2 h-4 w-4 text-gray-500" />
@@ -243,7 +245,7 @@ export default function DashboardTable() {
             variant="ghost"
             className="h-8 p-0 font-semibold text-gray-500 hover:bg-transparent"
           >
-            Valoració
+            {t('Dashboard.Table.columns.assessment')}
           </Button>
         ),
         cell: ({ row }) => getAssessmentBadge(row.getValue("assessment")),
@@ -257,7 +259,7 @@ export default function DashboardTable() {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 font-semibold text-gray-500 hover:bg-transparent"
           >
-            Tipu d'incidència
+            {t('Dashboard.Table.columns.incidentType')}
             {column.getIsSorted() === "asc" ? (
               <FiChevronUp className="ml-2 h-4 w-4 text-blue-600" />
             ) : // <LuArrowDown className="ml-2 h-4 w-4 text-gray-500" />
@@ -278,7 +280,7 @@ export default function DashboardTable() {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 font-semibold text-gray-500 hover:bg-transparent"
           >
-            Mensaje de la incidencia
+            {t('Dashboard.Table.columns.reportMessage')}
             {column.getIsSorted() === "asc" ? (
               <FiChevronUp className="ml-2 h-4 w-4 text-blue-600" />
             ) : // <LuArrowDown className="ml-2 h-4 w-4 text-gray-500" />
@@ -301,7 +303,7 @@ export default function DashboardTable() {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 font-semibold text-gray-500 hover:bg-transparent"
           >
-            Adjunto
+            {t('Dashboard.Table.columns.adjunct')}
             {column.getIsSorted() === "asc" ? (
               <FiChevronUp className="ml-2 h-4 w-4 text-blue-600" />
             ) : // <LuArrowDown className="ml-2 h-4 w-4 text-gray-500" />
@@ -322,7 +324,7 @@ export default function DashboardTable() {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="h-8 p-0 font-semibold text-gray-500 hover:bg-transparent"
           >
-            Estat
+            {t('Dashboard.Table.columns.status')}
             {column.getIsSorted() === "asc" ? (
               <FiChevronUp className="ml-2 h-4 w-4 text-blue-600" />
             ) : // <LuArrowDown className="ml-2 h-4 w-4 text-gray-500" />
@@ -349,20 +351,20 @@ export default function DashboardTable() {
                 onClick={() => handleViewReport(row.original.id)}
               >
                 <FiEye className="mr-2 h-4 w-4 text-blue-600" />
-                Ver detalles
+                {t('Dashboard.Table.actions.viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleEditReport(row.original.id)}
               >
                 <FiEdit className="mr-2 h-4 w-4 text-blue-600" />
-                Editar
+                {t('Dashboard.Table.actions.edit')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-600 hover:bg-red-50"
                 onClick={() => handleDeleteReport(row.original.id)}
               >
                 <FiTrash2 className="mr-2 h-4 w-4" />
-                Eliminar
+                {t('Dashboard.Table.actions.delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -431,15 +433,15 @@ export default function DashboardTable() {
     try {
       const result = await updateReportStatus(reportId, newStatus);
       if (result.success) {
-        toast.success(`Report status updated to ${newStatus}`);
+        toast.success(t('Dashboard.Table.toast.statusUpdated', { status: newStatus }));
         // Refresh the markers
         await fetchMarkers();
       } else {
-        toast.error(result.error || "Failed to update report status");
+        toast.error(result.error || t('Dashboard.Table.toast.statusUpdateFailed'));
       }
     } catch (error) {
       console.error("Error updating report status:", error);
-      toast.error("Failed to update report status");
+      toast.error(t('Dashboard.Table.toast.statusUpdateFailed'));
     }
   };
 
@@ -448,7 +450,7 @@ export default function DashboardTable() {
     if (!marker) return;
 
     const confirmDelete = window.confirm(
-      `Are you sure you want to delete the report by ${marker.firstName} ${marker.lastName}? This action cannot be undone.`
+      t('Dashboard.Table.confirmDelete', { name: `${marker.firstName} ${marker.lastName}` })
     );
 
     if (!confirmDelete) return;
@@ -456,15 +458,15 @@ export default function DashboardTable() {
     try {
       const result = await deleteReport(reportId);
       if (result.success) {
-        toast.success("Report deleted successfully");
+        toast.success(t('Dashboard.Table.toast.deleted'));
         // Refresh the markers
         await fetchMarkers();
       } else {
-        toast.error(result.error || "Failed to delete report");
+        toast.error(result.error || t('Dashboard.Table.toast.deleteFailed'));
       }
     } catch (error) {
       console.error("Error deleting report:", error);
-      toast.error("Failed to delete report");
+      toast.error(t('Dashboard.Table.toast.deleteFailed'));
     }
   };
 
@@ -486,20 +488,19 @@ export default function DashboardTable() {
         <div>
           <div className="flex items-baseline gap-5  ">
             <h1 className="text-2xl font-bold text-gray-900">
-              Opiniones de la ciudadanía
+              {t('Dashboard.Table.title')}
             </h1>
             <h2 className="text-[#0070FF] bg-[#F7FAFF] p-3 rounded-md">
-              Incidències
+              {t('Dashboard.Table.incidents')}
             </h2>
           </div>
 
           <p className="text-sm text-gray-600 mt-1">
-            Aquí podrás tratar las diferentes problemáticas que la ciudadanía ha
-            identificat
+            {t('Dashboard.Table.subtitle')}
           </p>
         </div>
         <Input
-          placeholder="Buscar en todos los campos..."
+          placeholder={t('Dashboard.Table.searchAllFields')}
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm"
@@ -508,12 +509,12 @@ export default function DashboardTable() {
           <Button variant="outline" size="sm" className="text-gray-700">
             {/* <FiFilter className="mr-2 h-4 w-4" /> */}
             <LuListFilter className="mr-2 h-4 w-4" />
-            Filtros
+            {t('Dashboard.Table.filters')}
           </Button>
           <Button variant="customBlue" size="sm">
             {/* <FiDownload className="mr-2 h-4 w-4" /> */}
             <SlCloudDownload className="mr-2 h-4 w-4" />
-            Export
+            {t('Dashboard.Table.export')}
           </Button>
         </div>
       </div>
@@ -551,7 +552,7 @@ export default function DashboardTable() {
             }}
             className="h-8 px-2 lg:px-3"
           >
-            Limpiar filtros
+            {t('Dashboard.Table.clearFilters')}
           </Button>
         )}
       </div>
@@ -634,7 +635,7 @@ export default function DashboardTable() {
                   colSpan={columns.length}
                   className="h-24 text-center text-gray-500"
                 >
-                  No hay resultados.
+                  {t('Dashboard.Table.noResults')}
                 </td>
               </tr>
             )}
@@ -645,11 +646,10 @@ export default function DashboardTable() {
       {/* Footer */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-500">
-          {table.getFilteredSelectedRowModel().rows.length} de{" "}
-          {table.getFilteredRowModel().rows.length} fila(s) seleccionadas.
+          {t('Dashboard.Table.selectedRows', { selected: table.getFilteredSelectedRowModel().rows.length, total: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="text-sm text-gray-500">
-          Mostrando {table.getRowModel().rows.length} de {data.length} entradas
+          {t('Dashboard.Table.showingEntries', { shown: table.getRowModel().rows.length, total: data.length })}
         </div>
       </div>
     </div>

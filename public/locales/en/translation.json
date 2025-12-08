@@ -260,6 +260,75 @@
     "truck": "Truck",
     "alarm": "Alarm",
     "bus": "Bus",
-    "rain": "Rain"
+    "rain": "Rain",
+    "NoiseChart": {
+      "title": "Noise Levels by Noise Type",
+      "subtitle": "Average noise levels (dB) grouped by audio category",
+      "emptyTitle": "No Data Available",
+      "emptyDescription": "Upload some noise data to see the pie chart analysis here. Data will appear once you import audio files or reports.",
+      "emptyNote": "Data will appear automatically when available",
+      "label": "{{name}}: {{value}} dB"
+    },
+    "Table": {
+      "title": "Citizen feedback",
+      "incidents": "Incidents",
+      "subtitle": "Here you can handle the different issues identified by citizens",
+      "searchAllFields": "Search all fields...",
+      "filters": "Filters",
+      "export": "Export",
+      "clearFilters": "Clear filters",
+      "noResults": "No results.",
+      "selectedRows": "{{selected}} of {{total}} row(s) selected.",
+      "showingEntries": "Showing {{shown}} of {{total}} entries",
+      "columns": {
+        "name": "Full name",
+        "incidentAddress": "Incident address",
+        "assessment": "Assessment",
+        "incidentType": "Incident type",
+        "reportMessage": "Incident message",
+        "adjunct": "Attachment",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewDetails": "View details",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "confirmDelete": "Are you sure you want to delete the report by {{name}}? This action cannot be undone.",
+      "toast": {
+        "statusUpdated": "Report status updated to {{status}}",
+        "statusUpdateFailed": "Failed to update report status",
+        "deleted": "Report deleted successfully",
+        "deleteFailed": "Failed to delete report"
+      }
+    }
+  },
+  "DatePicker": {
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "weekdays": {
+      "sun": "SUN",
+      "mon": "MON",
+      "tue": "TUE",
+      "wed": "WED",
+      "thu": "THU",
+      "fri": "FRI",
+      "sat": "SAT"
+    },
+    "time": "Time",
+    "customDate": "Custom Date"
   }
 }

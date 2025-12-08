@@ -8,10 +8,12 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useHeatmapStore } from '@/store/useHeatmapStore';
+import { useTranslation } from 'react-i18next';
 import { FiBarChart } from 'react-icons/fi';
 
 const NoiseChart: React.FC = () => {
   const { data: heatMapData } = useHeatmapStore();
+  const { t } = useTranslation();
 
   // Process data to group by noise type (category)
   const pieData = useMemo(() => {
@@ -112,7 +114,7 @@ const NoiseChart: React.FC = () => {
         <div className='w-full flex flex-col gap-4'>
           <div className='flex gap-4 items-center relative'>
             <h2 className='text-gray-400 font-bold text-2xl'>
-              Noise Levels by Noise Type
+              {t('Dashboard.NoiseChart.title')}
             </h2>
           </div>
         </div>
@@ -122,15 +124,14 @@ const NoiseChart: React.FC = () => {
             <FiBarChart className='w-8 h-8 text-blue-600' />
           </div>
           <h3 className='text-lg font-semibold text-gray-900 mb-2'>
-            No Data Available
+            {t('Dashboard.NoiseChart.emptyTitle')}
           </h3>
           <p className='text-sm text-gray-500 text-center max-w-sm'>
-            Upload some noise data to see the pie chart analysis here. Data will
-            appear once you import audio files or reports.
+            {t('Dashboard.NoiseChart.emptyDescription')}
           </p>
           <div className='mt-4 flex items-center gap-2 text-xs text-gray-400'>
             <div className='w-2 h-2 bg-blue-400 rounded-full'></div>
-            <span>Data will appear automatically when available</span>
+            <span>{t('Dashboard.NoiseChart.emptyNote')}</span>
           </div>
         </div>
       </div>
@@ -142,11 +143,11 @@ const NoiseChart: React.FC = () => {
       <div className='w-full flex flex-col gap-4'>
         <div className='flex gap-4 items-center relative'>
           <h2 className='text-gray-400 font-bold text-2xl'>
-            Noise Levels by Noise Type
+            {t('Dashboard.NoiseChart.title')}
           </h2>
         </div>
         <p className='text-sm text-gray-600'>
-          Average noise levels (dB) grouped by audio category
+          {t('Dashboard.NoiseChart.subtitle')}
         </p>
       </div>
 
@@ -162,7 +163,7 @@ const NoiseChart: React.FC = () => {
               cx='50%'
               cy='50%'
               outerRadius={140}
-              label={({ name, value }) => `${name}: ${value} dB`}
+              label={({ name, value }) => t('Dashboard.NoiseChart.label', { name, value })}
             >
               {pieData.map((entry: { name: string; value: number }) => (
                 <Cell key={entry.name} fill={colors[entry.name]} />

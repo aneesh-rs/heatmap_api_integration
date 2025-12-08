@@ -260,6 +260,75 @@
     "truck": "Camión",
     "alarm": "Alarma",
     "bus": "Bus",
-    "rain": "Lluvia"
+    "rain": "Lluvia",
+    "NoiseChart": {
+      "title": "Niveles de ruido por tipo",
+      "subtitle": "Niveles promedio de ruido (dB) agrupados por categoría de audio",
+      "emptyTitle": "No hay datos disponibles",
+      "emptyDescription": "Sube algunos datos de ruido para ver aquí el análisis en gráfico. Los datos aparecerán una vez importes archivos de audio o reportes.",
+      "emptyNote": "Los datos aparecerán automáticamente cuando estén disponibles",
+      "label": "{{name}}: {{value}} dB"
+    },
+    "Table": {
+      "title": "Opiniones de la ciudadanía",
+      "incidents": "Incidencias",
+      "subtitle": "Aquí podrás tratar las diferentes problemáticas que la ciudadanía ha identificado",
+      "searchAllFields": "Buscar en todos los campos...",
+      "filters": "Filtros",
+      "export": "Exportar",
+      "clearFilters": "Limpiar filtros",
+      "noResults": "No hay resultados.",
+      "selectedRows": "{{selected}} de {{total}} fila(s) seleccionadas.",
+      "showingEntries": "Mostrando {{shown}} de {{total}} entradas",
+      "columns": {
+        "name": "Nombre completo",
+        "incidentAddress": "Dirección de la incidencia",
+        "assessment": "Valoración",
+        "incidentType": "Tipo de incidencia",
+        "reportMessage": "Mensaje de la incidencia",
+        "adjunct": "Adjunto",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "actions": {
+        "viewDetails": "Ver detalles",
+        "edit": "Editar",
+        "delete": "Eliminar"
+      },
+      "confirmDelete": "¿Seguro que quieres eliminar el reporte de {{name}}? Esta acción no se puede deshacer.",
+      "toast": {
+        "statusUpdated": "Estado del reporte actualizado a {{status}}",
+        "statusUpdateFailed": "Error al actualizar el estado del reporte",
+        "deleted": "Reporte eliminado correctamente",
+        "deleteFailed": "Error al eliminar el reporte"
+      }
+    }
+  },
+  "DatePicker": {
+    "months": {
+      "jan": "Ene",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dic"
+    },
+    "weekdays": {
+      "sun": "DOM",
+      "mon": "LUN",
+      "tue": "MAR",
+      "wed": "MIÉ",
+      "thu": "JUE",
+      "fri": "VIE",
+      "sat": "SÁB"
+    },
+    "time": "Hora",
+    "customDate": "Fecha personalizada"
   }
 }

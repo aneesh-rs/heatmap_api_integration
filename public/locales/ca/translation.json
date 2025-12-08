@@ -260,6 +260,75 @@
     "truck": "Camió",
     "alarm": "Alarma",
     "bus": "Bus",
-    "rain": "Pluja"
+    "rain": "Pluja",
+    "NoiseChart": {
+      "title": "Nivells de soroll per tipus",
+      "subtitle": "Nivells mitjans de soroll (dB) agrupats per categoria d'àudio",
+      "emptyTitle": "No hi ha dades disponibles",
+      "emptyDescription": "Puja algunes dades de soroll per veure aquí l'anàlisi en gràfic. Les dades apareixeran un cop importis fitxers d'àudio o informes.",
+      "emptyNote": "Les dades apareixeran automàticament quan estiguin disponibles",
+      "label": "{{name}}: {{value}} dB"
+    },
+    "Table": {
+      "title": "Opinions de la ciutadania",
+      "incidents": "Incidències",
+      "subtitle": "Aquí podràs tractar les diferents problemàtiques que la ciutadania ha identificat",
+      "searchAllFields": "Cerca a tots els camps...",
+      "filters": "Filtres",
+      "export": "Exportar",
+      "clearFilters": "Netejar filtres",
+      "noResults": "No hi ha resultats.",
+      "selectedRows": "{{selected}} de {{total}} fila(es) seleccionades.",
+      "showingEntries": "Mostrant {{shown}} de {{total}} entrades",
+      "columns": {
+        "name": "Nom complet",
+        "incidentAddress": "Adreça de la incidència",
+        "assessment": "Valoració",
+        "incidentType": "Tipus d'incidència",
+        "reportMessage": "Missatge de la incidència",
+        "adjunct": "Adjunt",
+        "status": "Estat",
+        "actions": "Accions"
+      },
+      "actions": {
+        "viewDetails": "Veure detalls",
+        "edit": "Editar",
+        "delete": "Eliminar"
+      },
+      "confirmDelete": "Segur que vols eliminar l'informe de {{name}}? Aquesta acció no es pot desfer.",
+      "toast": {
+        "statusUpdated": "Estat de l'informe actualitzat a {{status}}",
+        "statusUpdateFailed": "Error en actualitzar l'estat de l'informe",
+        "deleted": "Informe eliminat correctament",
+        "deleteFailed": "Error en eliminar l'informe"
+      }
+    }
+  },
+  "DatePicker": {
+    "months": {
+      "jan": "Gen",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Abr",
+      "may": "Mai",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Ago",
+      "sep": "Set",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Des"
+    },
+    "weekdays": {
+      "sun": "DG",
+      "mon": "DL",
+      "tue": "DT",
+      "wed": "DC",
+      "thu": "DJ",
+      "fri": "DV",
+      "sat": "DS"
+    },
+    "time": "Hora",
+    "customDate": "Data personalitzada"
   }
 }
