@@ -21,6 +21,7 @@ import { ReportStatus } from '../types';
 import { updateReportStatus } from '../services/reports';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import L from 'leaflet';
 
 interface Props {
   isOpen: boolean;
@@ -28,6 +29,13 @@ interface Props {
   marker: AdminMarker;
   locationReports: AdminMarker[];
 }
+
+const customIcon = L.icon({
+  iconUrl: IMAGES.CustomMarkerImg,
+  iconSize: [40, 50], // size of the icon
+  iconAnchor: [20, 40], // point of the icon which corresponds to marker's location
+  popupAnchor: [0, -40], // point from which the popup should open
+});
 
 const colors = [
   { id: 1, hex: '#91E1F6', interval: 5 },
@@ -186,6 +194,7 @@ const LocationDetailsModal = ({
                 >
                   <TileLayer url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' />
                   <Marker
+                    icon={customIcon}
                     position={[marker.location.lat, marker.location.lng]}
                   />
                 </MapContainer>
