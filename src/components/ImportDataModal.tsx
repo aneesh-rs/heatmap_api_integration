@@ -135,13 +135,11 @@ const ImportDataModal = () => {
       const cleanData: DataPoint[] = parsedData.filter(
         (d): d is DataPoint => d !== null
       );
-      console.log(cleanData);
 
       // Push parsed data into Zustand store
       setData(cleanData);
       activateHeatmap();
 
-      console.log('Uploaded data stored in Zustand:', cleanData);
       setLoading(false);
     };
 

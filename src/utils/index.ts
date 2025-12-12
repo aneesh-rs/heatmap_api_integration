@@ -18,7 +18,6 @@ export const reverseGeocodeWithNumber = async (lat: number, lon: number) => {
   if (!houseNumber) {
     houseNumber = await getNearestHouseNumber(lat, lon);
   }
-  console.log('houseNumber', houseNumber);
 
   return {
     address: {
@@ -61,7 +60,6 @@ export const getPossibleLocations = async (address: string) => {
   );
   if (!response.ok) throw new Error('Failed to get possible locations');
   const data = await response.json();
-  console.log(data);
   return data;
 };
 
@@ -305,3 +303,43 @@ export const getFilteredPoints = (
 
   return filtered;
 };
+
+export function cleanGradient(
+  rawGrad: Record<string | number, string> | undefined
+) {
+  if (!rawGrad)
+    return {
+      0: '#1D70A2',
+      0.3: '#5BC0EB',
+      0.6: '#F1C40F',
+      0.85: '#E67E22',
+      1: '#8B0000',
+    };
+
+  // Convert keys to numbers and sort ascending
+  const entries = Object.entries(rawGrad)
+    .map(([k, v]) => [Number(k), v] as [number, string])
+    .filter(([k]) => !Number.isNaN(k))
+    .sort((a, b) => a[0] - b[0]);
+
+  if (entries.length === 0)
+    return {
+      0: '#1D70A2',
+      0.3: '#5BC0EB',
+      0.6: '#F1C40F',
+      0.85: '#E67E22',
+      1: '#8B0000',
+    };
+
+  // Ensure first key is 0
+  if (entries[0][0] > 0) entries.unshift([0, entries[0][1]]);
+
+  // Ensure last key is 1 (if not, duplicate last color at 1)
+  const last = entries[entries.length - 1];
+  if (last[0] < 1) entries.push([1, last[1]]);
+
+  // Build object with numeric-ish keys (leaflet.heat accepts object)
+  const cleaned: Record<number, string> = {};
+  for (const [k, v] of entries) cleaned[Number(k.toFixed(6))] = v;
+  return cleaned;
+}

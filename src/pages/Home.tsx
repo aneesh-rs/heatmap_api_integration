@@ -317,6 +317,7 @@ export default function Home({ role = 'User' }: HomeProps) {
     return normalizeFrequency(stop);
   };
 
+  // Map to leaflet-heat intensity range [0..1] snapped to the same dB bins as the legend.
   const heatmapPoints: [number, number, number][] = getFilteredPoints(
     heatmapDataPoints,
     filter.mode,
@@ -325,7 +326,7 @@ export default function Home({ role = 'User' }: HomeProps) {
   ).map((data) => [
     data.lat,
     data.lon,
-    quantizeFrequencyToStop(data.frequency),
+    Math.max(0, Math.min(1, normalizeFrequency(data.frequency))) * 30,
   ]);
   // Build a decibel-based gradient up to 80 dB (keys 0..1) with discrete colors per bin
   const buildDbGradient = () => {
@@ -352,7 +353,6 @@ export default function Home({ role = 'User' }: HomeProps) {
     return gradient;
   };
   const heatmapGradient = buildDbGradient();
-  console.log('markersToShow : ', markersToShow);
 
   if (!user) {
     return <Navigate to={'/login'} />;

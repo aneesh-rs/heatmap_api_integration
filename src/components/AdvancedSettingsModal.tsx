@@ -239,7 +239,6 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
 
   const handleRoleChange = async (id: string, newRole: 'Admin' | 'User') => {
     // TODO: Implement user role update via API
-    console.log(id, newRole);
     toast.error('User role update not yet implemented via API');
   };
 

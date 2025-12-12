@@ -81,8 +81,6 @@ export const useStreetSearchStore = create<StreetSearchStore>((set) => ({
       // Filter results to prioritize streets, roads, and addresses
       const streetResults = data;
 
-      console.log(streetResults);
-
       set({
         searchResults: streetResults.slice(0, 10), // Limit to top 10 results
         showSuggestions: streetResults.length > 0,

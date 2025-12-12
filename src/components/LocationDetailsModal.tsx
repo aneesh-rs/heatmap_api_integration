@@ -85,7 +85,6 @@ const LocationDetailsModal = ({
 
   const handleUpdateReportStatus = async () => {
     if (!currentReport) return;
-    console.log('currentReport : ', currentReport);
 
     const res = await updateReportStatus(
       currentReport.id as string,
@@ -148,7 +147,6 @@ const LocationDetailsModal = ({
     { id: 'angry', icon: <PiSmileyAngry size={28} /> },
     { id: 'surprised', icon: <BiDizzy size={28} /> },
   ];
-  console.log(marker);
 
   if (!marker || !currentReport) return null;
 
