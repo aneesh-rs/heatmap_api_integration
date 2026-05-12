@@ -43,22 +43,22 @@ const buildDbPalette = (count: number) => {
   // Fixed palette from low -> high frequencies
   // <40 (dark blue) ... 75-80 (dark red)
   const fixedPaletteLowToHigh = [
-    '#0B3C5D', // dark blue
-    '#1D70A2', // blue
-    '#5BC0EB', // light blue
-    '#2ECC71', // green
-    '#F1C40F', // yellow
-    '#F39C12', // orange
-    '#E67E22', // deep orange
-    '#E74C3C', // red
-    '#8B0000', // dark red
+    '#6ED4E6', // dark blue
+    '#A3E37C', // blue
+    '#E8E85B', // light blue
+    '#E8E85B', // green
+    '#F5DD3B', // yellow
+    '#F7B821', // orange
+    '#EF7E1A', // deep orange
+    '#E52A1A', // red
+    '#FF2EEA', // dark red
   ];
   if (count <= fixedPaletteLowToHigh.length) {
     return fixedPaletteLowToHigh.slice(0, count);
   }
   // If ever requested more, extend by repeating edge colors
   const extended = [...fixedPaletteLowToHigh];
-  while (extended.length < count) extended.push('#8B0000');
+  while (extended.length < count) extended.push('#FF2EEA');
   return extended;
 };
 

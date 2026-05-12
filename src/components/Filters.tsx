@@ -41,15 +41,15 @@ const districts = [
 ];
 
 const colors = [
-  { id: 1, hex: '#91E1F6', interval: 40 },
-  { id: 2, hex: '#CEFE99', interval: 45 },
-  { id: 3, hex: '#6AC700', interval: 50 },
-  { id: 4, hex: '#FEFE00', interval: 55 },
-  { id: 5, hex: '#FCCD01', interval: 60 },
-  { id: 6, hex: '#FD8002', interval: 65 },
-  { id: 7, hex: '#FF0103', interval: 70 },
-  { id: 8, hex: '#FF00FE', interval: 75 },
-  { id: 9, hex: '#4647FA', interval: 80 },
+  { id: 1, hex: '#6ED4E6', interval: 40 },
+  { id: 2, hex: '#A3E37C', interval: 45 },
+  { id: 3, hex: '#E8E85B', interval: 50 },
+  { id: 4, hex: '#F5DD3B', interval: 55 },
+  { id: 5, hex: '#F7B821', interval: 60 },
+  { id: 6, hex: '#EF7E1A', interval: 65 },
+  { id: 7, hex: '#E52A1A', interval: 70 },
+  { id: 8, hex: '#FF2EEA', interval: 75 },
+  { id: 9, hex: '#3C3CFF', interval: 80 },
 ];
 
 export default function Filters() {

@@ -64,7 +64,7 @@ export default function Home({ role = 'User' }: HomeProps) {
   const zoomOutRef = useRef<() => void>(() => {});
   const mapRef = useRef<Map | null>(null);
 
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
   const { markers: adminMarkers, fetchMarkers } = useAdminMarkersStore();
   const { markers: userMarkers, fetchUserMarkers } = useUserMarkersStore();
   const {
@@ -243,13 +243,15 @@ export default function Home({ role = 'User' }: HomeProps) {
   }, [selectedMode]);
 
   useEffect(() => {
+    if (!authReady) return; // Wait for auth to complete
+
     if (user?.role === 'Admin') {
       console.log('fetching markers');
       fetchMarkers();
     } else if (user?.id) {
       fetchUserMarkers(user.id);
     }
-  }, [user?.role, user?.id]);
+  }, [user?.role, user?.id, authReady, fetchMarkers, fetchUserMarkers]);
 
   // Handle selected marker from dashboard table
   useEffect(() => {
@@ -307,16 +309,6 @@ export default function Home({ role = 'User' }: HomeProps) {
 
   // Convert to [lat, lng, intensity] with discrete color bins per frequency range
   // Match the same bins used in FilterDistrict: <40, 40-45, 45-50, ..., 75-80
-  const stopsDb = [0, 40, 45, 50, 55, 60, 65, 70, 75, 80];
-  const quantizeFrequencyToStop = (f: number) => {
-    if (f < 40) return normalizeFrequency(40);
-    if (f >= 80) return normalizeFrequency(80);
-    // Snap to the lower bound of the bin: 40,45,50,...,75
-    const idx = Math.min(8, Math.max(1, 1 + Math.floor((f - 40) / 5)));
-    const stop = stopsDb[idx];
-    return normalizeFrequency(stop);
-  };
-
   // Map to leaflet-heat intensity range [0..1] snapped to the same dB bins as the legend.
   const heatmapPoints: [number, number, number][] = getFilteredPoints(
     heatmapDataPoints,

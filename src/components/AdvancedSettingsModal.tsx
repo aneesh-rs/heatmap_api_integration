@@ -237,7 +237,7 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
     }
   };
 
-  const handleRoleChange = async (id: string, newRole: 'Admin' | 'User') => {
+  const handleRoleChange = async () => {
     // TODO: Implement user role update via API
     toast.error('User role update not yet implemented via API');
   };
@@ -363,7 +363,7 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
                             {...member}
                             onRoleChange={(newRole) => {
                               if (newRole === 'Admin' || newRole === 'User') {
-                                handleRoleChange(member.id, newRole);
+                                handleRoleChange();
                               }
                             }}
                             onDelete={handleDelete}
