@@ -44,9 +44,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           localStorage.removeItem('user');
         }
       } else {
-        console.log('User is not authenticated');
-        setUser(null);
-        setAuthReady(true); // Auth check complete
+        // Firebase social login persists user without Nest JWT
+        const cached = localStorage.getItem('user');
+        if (cached) {
+          try {
+            setUser(JSON.parse(cached) as User);
+          } catch {
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+        setAuthReady(true);
       }
 
       setLoading(false);

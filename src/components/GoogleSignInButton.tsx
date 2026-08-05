@@ -1,59 +1,51 @@
-import { useAuth } from '@/context/AuthContext';
-import { googleLogin } from '@/services/auth';
-import { CredentialResponse, GoogleLogin } from '@react-oauth/google';
+import { FaGoogle } from 'react-icons/fa';
+import { signInWithGoogle } from '../services/firebase';
 import toast from 'react-hot-toast';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { User } from '../types';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function GoogleSignInButton() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const handleGoogleLoginWithDefaultButton = async (
-    credentialResponse: CredentialResponse
-  ) => {
+  const { t } = useTranslation('');
+
+  const handleGoogleLogin = async (e: React.MouseEvent) => {
+    e.preventDefault();
     try {
-      if (!credentialResponse.credential) return;
-      console.log(params);
-      const invitationId = params.get('invitationId');
-      const result = await googleLogin(
-        credentialResponse.credential,
-        invitationId
-      );
-
-      if (result.success && result.data) {
-        localStorage.setItem('access_token', result.data.access_token);
-
-        const user = result.data.user;
-        setUser({ ...user, birthday: '', firstSurname: '', name: '' });
-        toast.success('Login successful!');
-        console.log('Google sign-in');
+      const res = await signInWithGoogle();
+      if (res.success && res.user) {
+        const user = res.user as User;
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.removeItem('access_token'); // Nest JWT not used for Firebase auth
+        setUser(user);
+        toast.success(t('Login.googleSuccess'));
         if (user.role === 'Admin') {
           navigate('/admin');
         } else {
           navigate('/');
         }
       } else {
-        toast.error(result.error || 'Google login failed');
+        toast.error(res.error || t('Login.googleError'));
       }
     } catch (err) {
       console.error('Google sign-in error', err);
+      toast.error(t('Login.googleError'));
     }
   };
+
   return (
-    <>
-      <GoogleLogin
-        onSuccess={handleGoogleLoginWithDefaultButton}
-        type='icon'
-        theme='filled_blue'
-        shape='circle'
-        size='large'
+    <button
+      type='button'
+      onClick={handleGoogleLogin}
+      aria-label='Sign in with Google'
+    >
+      <FaGoogle
+        color='#EA4335'
+        size={35}
+        className='duration-300 hover:scale-110 cursor-pointer'
       />
-      {/* <button
-        onClick={() => handleGoogleLogin()}
-        className='hover:scale-115 duration-300 cursor-pointer'
-      >
-        <img src={IMAGES.Google} alt='' className='w-10 h-10' />
-      </button> */}
-    </>
+    </button>
   );
 }
