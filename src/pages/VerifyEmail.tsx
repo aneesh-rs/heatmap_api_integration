@@ -1,44 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { verifyEmail, fetchUserProfile } from '../services/auth';
-import { useAuth } from '../context/AuthContext';
+import { verifyEmail } from '../services/auth';
 import Loader from './LoaderScreen';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { setUser } = useAuth();
   const [submitting, setSubmitting] = useState(true);
+  const ran = useRef(false);
 
   useEffect(() => {
+    if (ran.current) return;
+    ran.current = true;
+
     const token = searchParams.get('token');
     if (!token) {
       toast.error('Invalid verification link');
-      navigate('/login');
+      navigate('/login', { replace: true });
       return;
     }
+
     (async () => {
       setSubmitting(true);
       const res = await verifyEmail(token);
-      if (res.success && res.data) {
-        // Token stored; fetch profile
-        const prof = await fetchUserProfile();
-        if (prof.success && prof.data) {
-          toast.success('Email verified');
-          setUser(prof.data);
-          navigate(prof.data.role === 'Admin' ? '/admin' : '/');
-        } else {
-          toast.error(prof.error || 'Verification failed');
-          navigate('/login');
-        }
+      localStorage.removeItem('access_token');
+      if (res.success) {
+        toast.success('Email verified! Please log in.');
+        navigate('/login', { replace: true });
       } else {
         toast.error(res.error || 'Verification failed');
-        navigate('/login');
+        navigate('/login', { replace: true });
       }
       setSubmitting(false);
     })();
-  }, [navigate, searchParams, setUser]);
+  }, [navigate, searchParams]);
 
   if (submitting) return <Loader />;
   return null;

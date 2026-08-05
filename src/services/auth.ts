@@ -142,22 +142,17 @@ export const signUp = async (
   }
 };
 
-// Verify email function
+// Verify email — BE only marks email verified; no JWT issued
 export const verifyEmail = async (
   token: string
-): Promise<ApiResponse<AuthResponse>> => {
+): Promise<ApiResponse<{ message: string }>> => {
   try {
-    const response = await axiosClient.post<AuthResponse>(
+    const response = await axiosClient.post<{ message: string }>(
       '/auth/verify-email',
       {
         token,
       }
     );
-
-    const { access_token } = response.data;
-
-    // Store token only
-    localStorage.setItem('access_token', access_token);
 
     return {
       success: true,
