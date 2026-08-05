@@ -4,7 +4,12 @@ import { AudioType, DataPoint, FilterMode } from '@/types';
 
 export const reverseGeocode = async (lat: number, lon: number) => {
   const response = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+    {
+      headers: {
+        Accept: 'application/json',
+      },
+    }
   );
   if (!response.ok) throw new Error('Failed to reverse geocode');
   const data = await response.json();
@@ -13,11 +18,8 @@ export const reverseGeocode = async (lat: number, lon: number) => {
 
 export const reverseGeocodeWithNumber = async (lat: number, lon: number) => {
   const nominatim = await reverseGeocode(lat, lon);
-  let houseNumber = nominatim?.address?.house_number || null;
-
-  if (!houseNumber) {
-    houseNumber = await getNearestHouseNumber(lat, lon);
-  }
+  // Overpass blocked by CORS in browser — use Nominatim only
+  const houseNumber = nominatim?.address?.house_number || null;
 
   return {
     address: {
@@ -31,26 +33,12 @@ export const reverseGeocodeWithNumber = async (lat: number, lon: number) => {
   };
 };
 
-export const getNearestHouseNumber = async (lat: number, lon: number) => {
-  const query = `
-    [out:json];
-    (
-      way(around:50,${lat},${lon})["addr:housenumber"]["addr:interpolation"];
-      node(around:50,${lat},${lon})["addr:housenumber"]["addr:interpolation"];
-    );
-    out center 1;
-  `;
-  const response = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    body: query,
-  });
-
-  if (!response.ok) throw new Error('Failed to query Overpass');
-  const data = await response.json();
-
-  if (data.elements.length > 0) {
-    return data.elements[0].tags['addr:housenumber'];
-  }
+export const getNearestHouseNumber = async (
+  _lat: number,
+  _lon: number,
+): Promise<string | null> => {
+  // Overpass API has no browser CORS — do not call from client.
+  // House number comes from Nominatim when available.
   return null;
 };
 

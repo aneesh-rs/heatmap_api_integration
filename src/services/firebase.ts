@@ -5,6 +5,7 @@ import {
   signOut,
   UserCredential,
   sendEmailVerification,
+  GoogleAuthProvider,
 } from 'firebase/auth';
 
 import {
@@ -132,6 +133,15 @@ export const signInWithGoogle = async () => {
 
     const user = result.user;
     const uid = user.uid;
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const googleIdToken =
+      credential?.idToken ||
+      (
+        result as {
+          _tokenResponse?: { oauthIdToken?: string };
+        }
+      )._tokenResponse?.oauthIdToken ||
+      null;
 
     const userDocRef = doc(firestore, 'users', uid);
     const userSnapshot = await getDoc(userDocRef);
@@ -151,6 +161,7 @@ export const signInWithGoogle = async () => {
 
     return {
       success: true,
+      googleIdToken,
       user: {
         id: uid,
         email: user.email,
@@ -165,6 +176,7 @@ export const signInWithGoogle = async () => {
     console.error('Google sign-in error', err);
     return {
       success: false,
+      googleIdToken: null,
       error: (err as FirebaseError).message,
     };
   }
