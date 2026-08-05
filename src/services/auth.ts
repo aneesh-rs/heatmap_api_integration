@@ -1,5 +1,6 @@
 import axiosClient from '../apiClient';
 import { Roles, User } from '../types';
+import { logout as firebaseLogout } from './firebase';
 
 export interface LoginRequest {
   email: string;
@@ -179,6 +180,11 @@ export const verifyEmail = async (
 export const logout = async (): Promise<void> => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('user');
+  try {
+    await firebaseLogout();
+  } catch {
+    // ignore when Firebase session was never started
+  }
 };
 
 // Map API profile payload to app User

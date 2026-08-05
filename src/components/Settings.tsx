@@ -87,13 +87,23 @@ const Settings = () => {
 
     setLoading(true);
     try {
+      let photoURL = formData.photoURL || '';
+      if (selectedFile) {
+        photoURL = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = reject;
+          reader.readAsDataURL(selectedFile);
+        });
+      }
+
       const payload = {
         email: formData.email,
         name: formData.name,
         firstSurname: formData.firstSurname,
         secondSurname: formData.secondSurname,
         birthday: formData.birthday,
-        photoURL: formData.photoURL || "",
+        photoURL,
         role: formData.role,
       };
       const res = await updateUserProfile(payload);

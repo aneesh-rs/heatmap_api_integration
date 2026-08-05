@@ -11,6 +11,8 @@ import LoaderScreen from './pages/LoaderScreen';
 import Layout from './pages/Layout';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
+import ProtectedRoute from './components/ProtectedRoute';
+import Unauthorized from './pages/Unauthorized';
 
 function App() {
   const { loading } = useAuth();
@@ -20,14 +22,17 @@ function App() {
       <Toaster />
       <Routes>
         <Route path='/' element={<Layout />}>
-          <Route path='/' element={<Home />} />
-          <Route path='/admin' element={<Admin />} />
-          <Route path='/dashboard' element={<Dashboard />} />
+          <Route index element={<Home />} />
+          <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
+            <Route path='admin' element={<Admin />} />
+            <Route path='dashboard' element={<Dashboard />} />
+          </Route>
         </Route>
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/verify-email' element={<VerifyEmail />} />
         <Route path='/reset-password' element={<ResetPassword />} />
+        <Route path='/unauthorized' element={<Unauthorized />} />
       </Routes>
     </>
   );

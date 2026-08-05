@@ -136,6 +136,7 @@ export default function DashboardTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const { markers: adminMarkers, fetchMarkers } = useAdminMarkersStore();
   const navigate = useNavigate();
   const { setLocationDetailsModalOpen } = useModalStore();
@@ -401,6 +402,34 @@ export default function DashboardTable() {
     table.getColumn('status')?.setFilterValue(newFilter);
   };
 
+  const handleExportCsv = () => {
+    const rows = table.getFilteredRowModel().rows.map((row) => row.original);
+    if (rows.length === 0) {
+      toast.error(t('Dashboard.Table.toast.exportEmpty'));
+      return;
+    }
+    const headers = ['name', 'incidentAddress', 'incidentType', 'reportMessage', 'status'];
+    const csv = [
+      headers.join(','),
+      ...rows.map((row) =>
+        headers
+          .map((key) => {
+            const value = String(row[key as keyof CitizenFeedback] ?? '');
+            return `"${value.replace(/"/g, '""')}"`;
+          })
+          .join(','),
+      ),
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'citizen-feedback.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success(t('Dashboard.Table.toast.exported'));
+  };
+
   // Action handlers
   const handleViewReport = (reportId: string) => {
     // Find the marker in adminMarkers
@@ -506,13 +535,16 @@ export default function DashboardTable() {
           className='max-w-sm'
         />
         <div className='flex items-center gap-2'>
-          <Button variant='outline' size='sm' className='text-gray-700'>
-            {/* <FiFilter className="mr-2 h-4 w-4" /> */}
+          <Button
+            variant='outline'
+            size='sm'
+            className='text-gray-700'
+            onClick={() => setShowFilters((v) => !v)}
+          >
             <LuListFilter className='mr-2 h-4 w-4' />
             {t('Dashboard.Table.filters')}
           </Button>
-          <Button variant='customBlue' size='sm'>
-            {/* <FiDownload className="mr-2 h-4 w-4" /> */}
+          <Button variant='customBlue' size='sm' onClick={handleExportCsv}>
             <SlCloudDownload className='mr-2 h-4 w-4' />
             {t('Dashboard.Table.export')}
           </Button>
@@ -520,7 +552,14 @@ export default function DashboardTable() {
       </div>
 
       {/* Filters */}
+      {showFilters && (
       <div className='flex items-center gap-4 flex-wrap'>
+        <Button variant='outline' size='sm' onClick={() => handleStatusFilter('active')}>
+          {t('Dashboard.Table.filterActive')}
+        </Button>
+        <Button variant='outline' size='sm' onClick={() => handleStatusFilter('closed')}>
+          {t('Dashboard.Table.filterClosed')}
+        </Button>
         {/* <Select onValueChange={handleAssessmentFilter}>
                     <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Valoración" />
@@ -556,6 +595,7 @@ export default function DashboardTable() {
           </Button>
         )}
       </div>
+      )}
 
       {/* Active Filters Display */}
       <div className='flex  gap-2 flex-wrap'>

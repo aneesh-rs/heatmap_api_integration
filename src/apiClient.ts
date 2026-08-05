@@ -9,7 +9,6 @@ const axiosClient = axios.create({
   },
 });
 
-// Add token to requests if available
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
   if (token) {
@@ -18,24 +17,18 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle token expiration
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Only redirect if we're not already on the login page
-      // and token exists (meaning it was rejected, not missing)
-      const token = localStorage.getItem("access_token");
       const currentPath = window.location.pathname;
-      
-      if (token && currentPath !== "/login") {
-        console.warn("[Auth] Received 401 - Token may be invalid or expired");
+      const publicPaths = ["/login", "/signup", "/verify-email", "/reset-password"];
+      const isPublic = publicPaths.some((p) => currentPath.startsWith(p));
+
+      if (!isPublic) {
         localStorage.removeItem("access_token");
         localStorage.removeItem("user");
-        // Give a small delay to allow other async operations to complete
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 100);
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);

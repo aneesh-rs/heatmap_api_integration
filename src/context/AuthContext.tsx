@@ -14,7 +14,7 @@ interface AuthContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  authReady: boolean; // New: indicates auth check is complete
+  authReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,10 +22,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authReady, setAuthReady] = useState(false); // New: track auth confirmation
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
-    // Check if user is authenticated on app load
     const checkAuth = async () => {
       setLoading(true);
       setAuthReady(false);
@@ -34,31 +33,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const res = await fetchUserProfile();
         if (res.success && res.data) {
           setUser(res.data);
-          setAuthReady(true); // Auth confirmed
+          localStorage.setItem('user', JSON.stringify(res.data));
         } else {
-          console.log('Profile fetch failed:', res.error);
           setUser(null);
-          setAuthReady(true); // Auth check complete, but no user
-          // Clear invalid token
           localStorage.removeItem('access_token');
           localStorage.removeItem('user');
         }
       } else {
-        // Firebase social login persists user without Nest JWT
-        const cached = localStorage.getItem('user');
-        if (cached) {
-          try {
-            setUser(JSON.parse(cached) as User);
-          } catch {
-            localStorage.removeItem('user');
-            setUser(null);
-          }
-        } else {
-          setUser(null);
-        }
-        setAuthReady(true);
+        setUser(null);
+        localStorage.removeItem('user');
       }
 
+      setAuthReady(true);
       setLoading(false);
     };
 

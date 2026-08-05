@@ -184,8 +184,8 @@ const ImportDataModal = () => {
   };
 
   const validateSentiloForm = (): boolean => {
-    const { baseUrl, identityKey, providerId, sensorId } = sentiloFormData;
-    if (!baseUrl || !identityKey || !providerId || !sensorId) {
+    const { baseUrl, identityKey, sensorId } = sentiloFormData;
+    if (!baseUrl || !identityKey || !sensorId) {
       setErrorMessage('Please fill in all Sentilo API fields');
       return false;
     }

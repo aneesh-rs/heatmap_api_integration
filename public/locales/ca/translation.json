@@ -75,7 +75,8 @@
     "submitReview": "Enviar Informe",
     "thankYouMessage": "Gràcies, la teva opinió ens ajuda a proporcionar un millor lloc per a tothom.",
     "reportCreatedSuccess": "Informe creat correctament",
-    "reportCreatedError": "Error en crear l'informe"
+    "reportCreatedError": "Error en crear l'informe",
+    "userNotAuthenticated": "Inicia sessió per enviar un informe"
   },
   "Settings": {
     "uploadPhoto": "Pujar foto",

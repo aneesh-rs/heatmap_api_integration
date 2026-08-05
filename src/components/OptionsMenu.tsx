@@ -4,6 +4,7 @@ import { HiOutlineMailOpen } from 'react-icons/hi';
 import { TbInfoOctagon } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
 import { useCityStore } from '../store/useCityStore';
+import { useAuth } from '../context/AuthContext';
 
 type Props = {
   fabOpen: boolean;
@@ -19,6 +20,7 @@ export default function OptionsMenu({
   const containerRef = useRef<HTMLDivElement>(null);
   const { selectedCity } = useCityStore();
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   const isTerrassa = selectedCity.value === 'terrassa';
 
@@ -45,7 +47,21 @@ export default function OptionsMenu({
     >
       {fabOpen && (
         <div className='mb-4 flex flex-col p-2 items-center animate-fade-in bg-white shadow-lg rounded-xl'>
-          <button className='rounded-xl px-5 py-2 flex items-center font-medium justify-between w-full cursor-pointer gap-2 hover:bg-blue-50 transition'>
+          <button
+            type='button'
+            onClick={() => {
+              const subject = encodeURIComponent(t('OptionsMenu.emailSubject'));
+              const body = encodeURIComponent(
+                t('OptionsMenu.emailBody', {
+                  location: selectedCity.label,
+                  defaultValue: `Noise report in ${selectedCity.label}`,
+                }),
+              );
+              window.location.href = `mailto:${user?.email || ''}?subject=${subject}&body=${body}`;
+              setFabOpen(false);
+            }}
+            className='rounded-xl px-5 py-2 flex items-center font-medium justify-between w-full cursor-pointer gap-2 hover:bg-blue-50 transition'
+          >
             <span>{t('OptionsMenu.sendEmail')}</span>
             <HiOutlineMailOpen size={20} className='text-blue-500' />
           </button>

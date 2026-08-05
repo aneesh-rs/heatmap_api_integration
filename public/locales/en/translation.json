@@ -75,7 +75,8 @@
     "submitReview": "Submit Review",
     "thankYouMessage": "Thank you, your opinion helps us to provide a better place for everyone.",
     "reportCreatedSuccess": "Report created successfully",
-    "reportCreatedError": "Failed to create report"
+    "reportCreatedError": "Failed to create report",
+    "userNotAuthenticated": "Please log in to submit a report"
   },
   "Settings": {
     "uploadPhoto": "Upload photo",
@@ -209,7 +210,9 @@
     "cancel": "Cancel",
     "done": "Done",
     "userRoleUpdated": "User role updated",
-    "failedToUpdateRole": "Failed to update user role"
+    "failedToUpdateRole": "Failed to update user role",
+    "linkCopied": "Invite link copied to clipboard",
+    "deleteUser": "Delete user"
   },
   "ImportData": {
     "title": "Import new data",
@@ -229,7 +232,9 @@
   },
   "OptionsMenu": {
     "sendEmail": "Send email",
-    "createReport": "Create report"
+    "createReport": "Create report",
+    "emailSubject": "Terrassa noise report",
+    "emailBody": "I would like to report a noise issue in {{location}}."
   },
   "FilterDistrict": {
     "title": "Filters",
@@ -276,6 +281,8 @@
       "searchAllFields": "Search all fields...",
       "filters": "Filters",
       "export": "Export",
+      "filterActive": "Active",
+      "filterClosed": "Closed",
       "clearFilters": "Clear filters",
       "noResults": "No results.",
       "selectedRows": "{{selected}} of {{total}} row(s) selected.",
@@ -300,7 +307,9 @@
         "statusUpdated": "Report status updated to {{status}}",
         "statusUpdateFailed": "Failed to update report status",
         "deleted": "Report deleted successfully",
-        "deleteFailed": "Failed to delete report"
+        "deleteFailed": "Failed to delete report",
+        "exportEmpty": "No rows to export",
+        "exported": "Export downloaded"
       }
     }
   },

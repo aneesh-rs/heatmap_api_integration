@@ -58,3 +58,28 @@ export const deleteUser = async (userId: string): Promise<ApiResponse<object>> =
   }
 };
 
+export const updateUser = async (
+  userId: string,
+  payload: Partial<Pick<User, 'role' | 'name' | 'firstSurname' | 'secondSurname' | 'email' | 'birthday' | 'photoURL'>>,
+): Promise<ApiResponse<User>> => {
+  try {
+    const res = await axiosClient.put<ApiUser>(`/users/${userId}`, payload);
+    const apiUser = res.data;
+    const user: User = {
+      id: apiUser.id,
+      role: apiUser.role as 'Admin' | 'User',
+      email: apiUser.email,
+      birthday: apiUser.birthday,
+      name: apiUser.name,
+      firstSurname: apiUser.firstSurname,
+      secondSurname: apiUser.secondSurname,
+      photoURL: apiUser.photoURL || '',
+    };
+    return { success: true, data: user };
+  } catch (error: unknown) {
+    const apiError = (error as { response?: { data?: { message?: string } } })
+      ?.response?.data?.message;
+    return { success: false, error: apiError || 'Failed to update user' };
+  }
+};
+

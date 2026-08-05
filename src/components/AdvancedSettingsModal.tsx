@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { FaCircleExclamation } from 'react-icons/fa6';
 import { FaTimes } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { getUsers, deleteUser } from '../services/users';
+import { getUsers, deleteUser, updateUser } from '../services/users';
 
 interface MemberItemProps extends User {
   isActive?: boolean;
@@ -101,19 +101,20 @@ const MemberItem: React.FC<MemberItemProps> = ({
 
 const InviteSection: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const handleCopyLink = async () => {
     try {
       if (!user) {
-        toast.error('Please login first');
+        toast.error(t('Login.loginFailed') || 'Please login first');
         return;
       }
       const res = await createInvitation({
         inviterId: user.id,
-        role: user.role,
+        role: 'User',
       });
       if (res.success && res.data) {
         await navigator.clipboard.writeText(res.data.invitationLink);
-        toast.success('Invite link copied to clipboard!');
+        toast.success(t('AdvancedSettings.linkCopied') || 'Invite link copied!');
       } else {
         toast.error(res.error || 'Failed to generate invite link');
       }
@@ -125,22 +126,16 @@ const InviteSection: React.FC = () => {
   return (
     <div className='flex gap-3 justify-between items-center px-4 py-3 w-full text-sm leading-none bg-violet-50 rounded-xl max-w-[472px] max-md:max-w-full'>
       <div className='self-stretch my-auto text-zinc-700'>
-        <h3 className='font-bold text-zinc-700'>Invite member with a link</h3>
-        <p className='mt-1 text-zinc-700'>Always as a "Viewer" role.</p>
+        <h3 className='font-bold text-zinc-700'>{t('AdvancedSettings.inviteMember')}</h3>
+        <p className='mt-1 text-zinc-700'>{t('AdvancedSettings.alwaysAsViewer')}</p>
       </div>
       <button
         type='button'
         onClick={handleCopyLink}
         className='flex gap-2 cursor-pointer hover:bg-indigo-500/80 duration-300 justify-center items-center px-4 py-3 bg-indigo-500 rounded-lg text-white font-medium'
-        aria-label='Copy invitation link'
+        aria-label={t('AdvancedSettings.copyLink')}
       >
-        <img
-          src='https://cdn.builder.io/api/v1/image/assets/TEMP/6101ec4fa0fdc8e37e45c75cec196f154aff5726?placeholderIfAbsent=true&apiKey=d16ff818163542fcb3b7968bb8567de2'
-          alt=''
-          className='object-contain shrink-0 self-stretch my-auto w-5 aspect-square'
-          aria-hidden='true'
-        />
-        <span className='my-auto'>Copy Link</span>
+        <span className='my-auto'>{t('AdvancedSettings.copyLink')}</span>
       </button>
     </div>
   );
@@ -195,7 +190,6 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
 
   const tabOptions = [
     { id: 'Admin', label: t('AdvancedSettings.admins') },
-    { id: 'Analyst', label: t('AdvancedSettings.analysts') },
     { id: 'User', label: t('AdvancedSettings.users') },
   ];
 
@@ -237,9 +231,16 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
     }
   };
 
-  const handleRoleChange = async () => {
-    // TODO: Implement user role update via API
-    toast.error('User role update not yet implemented via API');
+  const handleRoleChange = async (userId: string, newRole: 'Admin' | 'User') => {
+    const result = await updateUser(userId, { role: newRole });
+    if (result.success && result.data) {
+      setMembers((prev) =>
+        prev.map((m) => (m.id === userId ? { ...m, role: newRole } : m)),
+      );
+      toast.success(t('AdvancedSettings.userRoleUpdated'));
+    } else {
+      toast.error(result.error || t('AdvancedSettings.failedToUpdateRole'));
+    }
   };
 
   const handleDelete = async (userId: string) => {
@@ -363,7 +364,7 @@ const ViewExistingMember = ({ isOpen, onClose }: Props) => {
                             {...member}
                             onRoleChange={(newRole) => {
                               if (newRole === 'Admin' || newRole === 'User') {
-                                handleRoleChange();
+                                handleRoleChange(member.id, newRole);
                               }
                             }}
                             onDelete={handleDelete}

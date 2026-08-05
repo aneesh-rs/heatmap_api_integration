@@ -198,7 +198,6 @@ export default function Login() {
               t('Login.loginButton')
             )}
           </button>
-          {/* Social logins temporarily disabled during API migration */}
         </div>
         <SocialLoginButtons />
       </form>

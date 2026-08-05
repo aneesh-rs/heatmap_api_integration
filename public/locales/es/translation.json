@@ -75,7 +75,8 @@
     "submitReview": "Enviar Reporte",
     "thankYouMessage": "Gracias, tu opinión nos ayuda a proporcionar un mejor lugar para todos.",
     "reportCreatedSuccess": "Reporte creado exitosamente",
-    "reportCreatedError": "Error al crear el reporte"
+    "reportCreatedError": "Error al crear el reporte",
+    "userNotAuthenticated": "Inicia sesión para enviar un reporte"
   },
   "Settings": {
     "uploadPhoto": "Subir foto",
