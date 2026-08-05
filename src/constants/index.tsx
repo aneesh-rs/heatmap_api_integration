@@ -86,20 +86,21 @@ export const feelings = [
 ];
 
 export const polygons1: PolygonData[] = districtData.features.map(
-  (feature, index: number) => {
-    // Extract the coordinates
+  (feature) => {
     const positions = feature.geometry.coordinates[0][0].map(
       (position: number[]): Position => {
         return [position[1], position[0]]; // Reverse the coordinate pair
       }
     );
-    // Return the transformed data
+    const distriete = String(feature.properties.DISTRICTE);
     return {
-      id: `district-${index + 1}`,
+      id: `district-${distriete}`,
       positions,
-      population: feature.properties.POPULATION, // Random population
-      areaKm2: parseFloat((Math.random() * 9 + 1).toFixed(2)), // Random area
-      backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+      population: feature.properties.POPULATION,
+      areaKm2: parseFloat(
+        (Number(feature.properties.AREA) / 1_000_000).toFixed(2),
+      ),
+      backgroundColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
     };
   }
 );

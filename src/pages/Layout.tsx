@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { logout } from '../services/firebase';
+import { logout } from '../services/auth';
 import { useTranslation } from 'react-i18next';
 import Sidebar from '../components/Sidebar';
 import { useMapModeStore } from '../store/useMapModeStore';

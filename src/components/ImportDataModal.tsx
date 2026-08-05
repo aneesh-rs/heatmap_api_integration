@@ -211,17 +211,21 @@ const ImportDataModal = () => {
       const payload =
         importSource === 'ftp'
           ? {
-              host: ftpFormData.host,
-              port: parseInt(ftpFormData.port),
-              username: ftpFormData.username,
-              password: ftpFormData.password,
-              remoteFilePath: ftpFormData.remoteFilePath,
+              filePath: ftpFormData.remoteFilePath,
+              connectionConfig: {
+                host: ftpFormData.host,
+                port: parseInt(ftpFormData.port, 10),
+                username: ftpFormData.username,
+                password: ftpFormData.password,
+                protocol: parseInt(ftpFormData.port, 10) === 21 ? 'ftp' : 'sftp',
+              },
             }
           : {
-              baseUrl: sentiloFormData.baseUrl,
-              identityKey: sentiloFormData.identityKey,
-              providerId: sentiloFormData.providerId,
               sensorId: sentiloFormData.sensorId,
+              sentiloConfig: {
+                baseUrl: sentiloFormData.baseUrl,
+                identityKey: sentiloFormData.identityKey,
+              },
             };
 
       const response = await axiosClient.post(endpoint, payload);
@@ -232,9 +236,30 @@ const ImportDataModal = () => {
         }`
       );
 
-      // If response contains data, update the heatmap store
-      if (response.data?.data) {
-        setData(response.data.data);
+      // BE returns { success, dataPoints: { lat, lng, noiseValue, timestamp }[] }
+      const rawPoints = response.data?.dataPoints;
+      if (Array.isArray(rawPoints) && rawPoints.length > 0) {
+        const mapped: DataPoint[] = rawPoints.map(
+          (p: {
+            lat: number;
+            lng: number;
+            noiseValue: number;
+            timestamp: string;
+          }) => {
+            const d = new Date(p.timestamp);
+            const pad = (n: number) => String(n).padStart(2, '0');
+            return {
+              lat: p.lat,
+              lon: p.lng,
+              frequency: p.noiseValue,
+              date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+              time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
+              timestamp: p.timestamp,
+              audioType: 'All' as AudioType,
+            };
+          },
+        );
+        setData(mapped);
         activateHeatmap();
       }
 
