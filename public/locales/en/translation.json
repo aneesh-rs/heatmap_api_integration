@@ -216,14 +216,20 @@
   },
   "ImportData": {
     "title": "Import new data",
-    "subtitle": "Update the data for the map.",
+    "subtitle": "Load street line heatmap data for the map.",
+    "streetHeatmapTitle": "Street line heatmap",
+    "streetHeatmapHint": "Shows colored street segments with dB labels. Works without CloudNoise connection.",
+    "loadDemo": "Load demo street heatmap",
+    "supportedFormats": "Upload .geojson/.json for street lines, or .csv/.xlsx with columns: street_name, calculated_eq, lat1, lon1, lat2, lon2. Legacy point .xlsx still supported.",
+    "cloudnoiseHint": "Live CloudNoise data via backend. On Vercel needs CLOUDNOISE_HTTP_URL. Local dev can use CoAP with COAP_ENABLED=true.",
+    "loading": "Loading...",
     "dragAndDrop": "Drag and drop your files here",
     "searchComputer": "Search your computer",
     "selectedFiles": "Selected File",
     "selectedFilesPlural": "Selected Files",
     "onlyXlsxFiles": "Only manage .xlsx files",
     "cancel": "Cancel",
-    "next": "Next"
+    "next": "Load on map"
   },
   "ReportStatus": {
     "new": "New",

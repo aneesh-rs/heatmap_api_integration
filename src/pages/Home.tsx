@@ -42,7 +42,9 @@ import ZoomController from '../components/ZoomController';
 import MapRef from '../components/MapRef';
 import { useModalStore } from '../store/useModalStore';
 import HeatmapLayer from '../components/HeatmapLayer';
+import StreetNoiseLayer from '../components/StreetNoiseLayer';
 import { useHeatmapStore } from '@/store/useHeatmapStore';
+import { useCloudNoiseStore } from '@/store/useCloudNoiseStore';
 import useFilterDistrictStore from '@/store/useFilterDistrictStore';
 
 interface LocationData {
@@ -133,6 +135,7 @@ export default function Home({ role = 'User' }: HomeProps) {
 
   const [coordinates, setCoordinates] = useState<number[][]>([]);
   const { data: heatmapDataPoints, filter } = useHeatmapStore();
+  const { active: cloudNoiseActive } = useCloudNoiseStore();
 
   const MapClickHandler = () => {
     useMapEvents({
@@ -366,10 +369,11 @@ export default function Home({ role = 'User' }: HomeProps) {
         />
         <HeatmapLayer
           points={heatmapPoints}
-          visible={heatmapActive}
+          visible={heatmapActive && !cloudNoiseActive}
           gradient={heatmapGradient}
           max={1}
         />
+        <StreetNoiseLayer visible={heatmapActive && cloudNoiseActive} />
         <MapViewUpdater center={selectedCity.center} zoom={selectedCity.zoom} />
         <MapRef onMapReady={(map) => (mapRef.current = map)} />
         {(selectedMode === 'filterDistrict' || selectedMode === 'filter') &&

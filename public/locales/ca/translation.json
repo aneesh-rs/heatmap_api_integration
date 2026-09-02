@@ -214,14 +214,20 @@
   },
   "ImportData": {
     "title": "Importar noves dades",
-    "subtitle": "Actualitzar les dades del mapa.",
+    "subtitle": "Carregar mapa de calor per carrers al mapa.",
+    "streetHeatmapTitle": "Mapa de calor per carrers",
+    "streetHeatmapHint": "Mostra segments de carrer colorejats amb etiquetes dB. Funciona sense connexió CloudNoise.",
+    "loadDemo": "Carregar demo de carrers",
+    "supportedFormats": "Puja .geojson/.json per carrers, o .csv/.xlsx amb columnes: street_name, calculated_eq, lat1, lon1, lat2, lon2.",
+    "cloudnoiseHint": "Dades CloudNoise en viu via backend. A Vercel cal CLOUDNOISE_HTTP_URL.",
+    "loading": "Carregant...",
     "dragAndDrop": "Arrossega i deixa anar els teus fitxers aquí",
     "searchComputer": "Cercar al teu ordinador",
     "selectedFiles": "Fitxer Seleccionat",
     "selectedFilesPlural": "Fitxers Seleccionats",
     "onlyXlsxFiles": "Només gestionar fitxers .xlsx",
     "cancel": "Cancel·lar",
-    "next": "Següent"
+    "next": "Carregar al mapa"
   },
   "ReportStatus": {
     "new": "Nou",

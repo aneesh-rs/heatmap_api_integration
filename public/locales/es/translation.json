@@ -214,14 +214,20 @@
   },
   "ImportData": {
     "title": "Importar nuevos datos",
-    "subtitle": "Actualizar los datos del mapa.",
+    "subtitle": "Cargar mapa de calor por calles en el mapa.",
+    "streetHeatmapTitle": "Mapa de calor por calles",
+    "streetHeatmapHint": "Muestra segmentos de calle coloreados con etiquetas dB. Funciona sin conexión CloudNoise.",
+    "loadDemo": "Cargar demo de calles",
+    "supportedFormats": "Sube .geojson/.json para calles, o .csv/.xlsx con columnas: street_name, calculated_eq, lat1, lon1, lat2, lon2.",
+    "cloudnoiseHint": "Datos CloudNoise en vivo vía backend. En Vercel requiere CLOUDNOISE_HTTP_URL.",
+    "loading": "Cargando...",
     "dragAndDrop": "Arrastra y suelta tus archivos aquí",
     "searchComputer": "Buscar en tu computadora",
     "selectedFiles": "Archivo Seleccionado",
     "selectedFilesPlural": "Archivos Seleccionados",
     "onlyXlsxFiles": "Solo manejar archivos .xlsx",
     "cancel": "Cancelar",
-    "next": "Siguiente"
+    "next": "Cargar en mapa"
   },
   "ReportStatus": {
     "new": "Nuevo",

@@ -8,13 +8,24 @@ import { useMapModeStore } from '../store/useMapModeStore';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
 import { useHeatmapStore } from '@/store/useHeatmapStore';
+import { useCloudNoiseStore } from '@/store/useCloudNoiseStore';
 import { AudioType, DataPoint } from '@/types';
 import axiosClient from '../apiClient';
 import axios from 'axios';
+import terrassaDemoStreets from '@/constants/terrassa_demo_streets';
+import { applyStreetHeatmap } from '@/utils/loadStreetHeatmap';
+import {
+  normalizeStreetGeoJson,
+  parseStreetCsvText,
+  parseStreetGeoJsonText,
+  parseStreetWorkbookRows,
+  workbookLooksLikeStreetLines,
+} from '@/utils/streetGeoJson';
 
 export type HeatmapPoint = [number, number, number];
 
-type ImportSource = 'manual' | 'ftp' | 'sentilo';
+type ImportSource = 'manual' | 'ftp' | 'sentilo' | 'cloudnoise';
+type CloudNoiseQueryMode = 'indicator' | 'range';
 
 interface FTPFormData {
   host: string;
@@ -40,6 +51,11 @@ const ImportDataModal = () => {
 
   // New import source states
   const [importSource, setImportSource] = useState<ImportSource>('manual');
+  const [cloudNoiseQueryMode, setCloudNoiseQueryMode] =
+    useState<CloudNoiseQueryMode>('indicator');
+  const [cloudNoiseIndicator, setCloudNoiseIndicator] = useState('ln');
+  const [cloudNoiseStart, setCloudNoiseStart] = useState('2000-01-01 00:04:11');
+  const [cloudNoiseEnd, setCloudNoiseEnd] = useState('2000-01-01 02:03:38');
   const [ftpFormData, setFtpFormData] = useState<FTPFormData>({
     host: '',
     port: '21',
@@ -57,7 +73,116 @@ const ImportDataModal = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { setData } = useHeatmapStore();
+  const { setData, clearData } = useHeatmapStore();
+  const { clear: clearStreetHeatmap } = useCloudNoiseStore();
+
+  const showStreetHeatmap = (geojson: ReturnType<typeof normalizeStreetGeoJson>) => {
+    clearData();
+    applyStreetHeatmap(geojson);
+    setSuccessMessage(`Loaded ${geojson.features.length} street segments`);
+    setMode('drag');
+  };
+
+  const handleLoadDemo = () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    showStreetHeatmap(normalizeStreetGeoJson(terrassaDemoStreets));
+  };
+
+  const handleNext = async () => {
+    setLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (files.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    const file = files[0];
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+
+    try {
+      if (extension === 'geojson' || extension === 'json') {
+        const text = await file.text();
+        showStreetHeatmap(parseStreetGeoJsonText(text));
+        return;
+      }
+
+      if (extension === 'csv') {
+        const text = await file.text();
+        showStreetHeatmap(parseStreetCsvText(text));
+        return;
+      }
+
+      if (extension === 'xlsx' || extension === 'xls') {
+        const data = new Uint8Array(await file.arrayBuffer());
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json<Record<string, string | number>>(
+          worksheet,
+          { defval: '' },
+        );
+
+        if (workbookLooksLikeStreetLines(jsonData)) {
+          showStreetHeatmap(parseStreetWorkbookRows(jsonData));
+          return;
+        }
+
+        const parsedData: (DataPoint | null)[] = jsonData.map((row) => {
+          const lat = parseFloat(row['lat']?.toString().replace(',', '.') || '');
+          const lon = parseFloat(row['lon']?.toString().replace(',', '.') || '');
+          const frequency = parseFloat(
+            row['frequency']?.toString().replace(',', '.') || '',
+          );
+          const date = row['date']?.toString() || '';
+          const time = row['time']?.toString() || '';
+          const audioType = row['audioType']?.toString() || '';
+
+          if (!isNaN(lat) && !isNaN(lon) && !isNaN(frequency) && date && time) {
+            const timestamp = new Date(`${date}T${time}`).toISOString();
+            return {
+              lat,
+              lon,
+              frequency,
+              date,
+              time,
+              timestamp,
+              audioType: audioType as AudioType,
+            };
+          }
+          return null;
+        });
+
+        const cleanData: DataPoint[] = parsedData.filter(
+          (d): d is DataPoint => d !== null,
+        );
+
+        if (!cleanData.length) {
+          throw new Error(
+            'No valid rows found. For street lines use street_name, calculated_eq, lat1, lon1, lat2, lon2.',
+          );
+        }
+
+        clearStreetHeatmap();
+        setData(cleanData);
+        activateHeatmap();
+        setMode('drag');
+        setSuccessMessage(`Loaded ${cleanData.length} point measurements`);
+        return;
+      }
+
+      throw new Error(
+        'Unsupported file type. Use .geojson, .csv, or .xlsx for street line heatmap.',
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Failed to import file.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -85,70 +210,6 @@ const ImportDataModal = () => {
       const uploadedFiles = Array.from(e.target.files);
       setFiles(uploadedFiles);
     }
-  };
-
-  const handleNext = () => {
-    setLoading(true);
-    if (files.length === 0) {
-      setLoading(false);
-      return;
-    }
-
-    const file = files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json<
-        Record<string, string | number>
-      >(worksheet, { defval: '' });
-
-      const parsedData: (DataPoint | null)[] = jsonData.map((row) => {
-        const lat = parseFloat(row['lat']?.toString().replace(',', '.') || '');
-        const lon = parseFloat(row['lon']?.toString().replace(',', '.') || '');
-        const frequency = parseFloat(
-          row['frequency']?.toString().replace(',', '.') || ''
-        );
-        const date = row['date']?.toString() || '';
-        const time = row['time']?.toString() || '';
-        const audioType = row['audioType']?.toString() || '';
-
-        if (!isNaN(lat) && !isNaN(lon) && !isNaN(frequency) && date && time) {
-          // Combine DATE + TIME into a JS Date
-          const timestamp = new Date(`${date}T${time}`).toISOString();
-          return {
-            lat,
-            lon,
-            frequency,
-            date,
-            time,
-            timestamp,
-            audioType: audioType as AudioType,
-          };
-        }
-        return null;
-      });
-
-      const cleanData: DataPoint[] = parsedData.filter(
-        (d): d is DataPoint => d !== null
-      );
-
-      // Push parsed data into Zustand store
-      setData(cleanData);
-      activateHeatmap();
-
-      setLoading(false);
-    };
-
-    reader.onerror = () => {
-      setLoading(false);
-      setErrorMessage('Failed to read the selected file.');
-    };
-
-    reader.readAsArrayBuffer(file);
   };
 
   useEffect(() => {
@@ -192,6 +253,66 @@ const ImportDataModal = () => {
     return true;
   };
 
+  const validateCloudNoiseForm = (): boolean => {
+    if (cloudNoiseQueryMode === 'indicator') {
+      if (!cloudNoiseIndicator) {
+        setErrorMessage('Please select an indicator');
+        return false;
+      }
+      return true;
+    }
+
+    if (!cloudNoiseStart || !cloudNoiseEnd) {
+      setErrorMessage('Please provide both start and end times');
+      return false;
+    }
+    return true;
+  };
+
+  const handleCloudNoiseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!validateCloudNoiseForm()) return;
+
+    setImportLoading(true);
+
+    try {
+      const payload =
+        cloudNoiseQueryMode === 'indicator'
+          ? { indicator: cloudNoiseIndicator }
+          : { start: cloudNoiseStart, end: cloudNoiseEnd };
+
+      const response = await axiosClient.post('/import/cloudnoise', payload);
+      const geojson = response.data?.geojson;
+
+      if (!geojson?.features?.length) {
+        setErrorMessage('CloudNoise returned an empty FeatureCollection');
+        return;
+      }
+
+      clearData();
+      applyStreetHeatmap(geojson);
+      setSuccessMessage(
+        `Loaded ${response.data.featureCount} streets from CloudNoise`,
+      );
+      setMode('drag');
+    } catch (error) {
+      let errorMsg = 'Failed to fetch CloudNoise data';
+
+      if (axios.isAxiosError(error)) {
+        errorMsg = error.response?.data?.message || error.message || errorMsg;
+      } else if (error instanceof Error) {
+        errorMsg = error.message || errorMsg;
+      }
+
+      setErrorMessage(errorMsg);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
   const handleImportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -199,7 +320,9 @@ const ImportDataModal = () => {
 
     // Validate form based on source
     const isValid =
-      importSource === 'ftp' ? validateFtpForm() : validateSentiloForm();
+      importSource === 'ftp'
+        ? validateFtpForm()
+        : validateSentiloForm();
 
     if (!isValid) return;
 
@@ -430,11 +553,11 @@ const ImportDataModal = () => {
                     <h3 className='text-lg font-semibold text-gray-800 mb-4'>
                       Import Data Source
                     </h3>
-                    <div className='flex gap-4 mb-6'>
+                    <div className='flex flex-wrap gap-3 mb-6'>
                       <button
                         type='button'
                         onClick={() => setImportSource('manual')}
-                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                        className={`flex-1 min-w-[120px] py-3 px-4 rounded-lg font-medium transition-colors ${
                           importSource === 'manual'
                             ? 'bg-blue-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -445,7 +568,7 @@ const ImportDataModal = () => {
                       <button
                         type='button'
                         onClick={() => setImportSource('ftp')}
-                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                        className={`flex-1 min-w-[120px] py-3 px-4 rounded-lg font-medium transition-colors ${
                           importSource === 'ftp'
                             ? 'bg-blue-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -456,7 +579,7 @@ const ImportDataModal = () => {
                       <button
                         type='button'
                         onClick={() => setImportSource('sentilo')}
-                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                        className={`flex-1 min-w-[120px] py-3 px-4 rounded-lg font-medium transition-colors ${
                           importSource === 'sentilo'
                             ? 'bg-blue-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -464,14 +587,43 @@ const ImportDataModal = () => {
                       >
                         Sentilo API
                       </button>
+                      <button
+                        type='button'
+                        onClick={() => setImportSource('cloudnoise')}
+                        className={`flex-1 min-w-[120px] py-3 px-4 rounded-lg font-medium transition-colors ${
+                          importSource === 'cloudnoise'
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        CloudNoise
+                      </button>
                     </div>
                   </div>
 
                   {importSource === 'manual' ? (
                     <div className='space-y-4'>
+                      <div className='rounded-xl border border-blue-100 bg-blue-50/70 p-4'>
+                        <p className='text-sm font-medium text-blue-900'>
+                          {t('ImportData.streetHeatmapTitle')}
+                        </p>
+                        <p className='mt-1 text-sm text-blue-800/80'>
+                          {t('ImportData.streetHeatmapHint')}
+                        </p>
+                        <Button
+                          type='button'
+                          onClick={handleLoadDemo}
+                          className='mt-3 w-full'
+                        >
+                          {t('ImportData.loadDemo')}
+                        </Button>
+                      </div>
+
                       <div
-                        className={`border-2 border-dashed border-blue-400 h-full rounded-lg p-8 flex flex-col items-center justify-center min-h-[300px] ${
-                          dragActive ? 'bg-blue-50' : 'bg-white'
+                        className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center min-h-[260px] transition-colors ${
+                          dragActive
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-300 bg-slate-50'
                         }`}
                         onDragEnter={handleDrag}
                         onDragLeave={handleDrag}
@@ -479,24 +631,16 @@ const ImportDataModal = () => {
                         onDrop={handleDrop}
                       >
                         <FaFolder className='text-blue-500 text-5xl mb-4' />
-                        <p className='text-gray-700 mb-4'>
+                        <p className='text-gray-700 mb-4 text-center'>
                           {t('ImportData.dragAndDrop')}
                         </p>
-
-                        <div className='w-full relative flex items-center justify-center mb-4'>
-                          <div className='border-t border-gray-300 w-full'></div>
-                          <div className='absolute bg-white p-1'>
-                            <div className='w-3 h-3 rounded-full border border-gray-300'></div>
-                          </div>
-                        </div>
 
                         <label className='cursor-pointer'>
                           <input
                             type='file'
                             className='hidden'
                             onChange={handleFileChange}
-                            multiple
-                            accept='.xlsx'
+                            accept='.geojson,.json,.csv,.xlsx,.xls'
                           />
                           <div className='border border-blue-500 text-blue-500 rounded-full px-4 py-2 hover:bg-blue-50 transition-colors'>
                             {t('ImportData.searchComputer')}
@@ -505,16 +649,13 @@ const ImportDataModal = () => {
                         {files.length > 0 && (
                           <div className='mt-4 w-full'>
                             <h3 className='text-gray-700 font-semibold mb-2'>
-                              {files.length > 1
-                                ? t('ImportData.selectedFilesPlural')
-                                : t('ImportData.selectedFiles')}
-                              :
+                              {t('ImportData.selectedFiles')}:
                             </h3>
                             <ul className='space-y-2 max-h-[150px] overflow-y-auto'>
                               {files.map((file, index) => (
                                 <li
                                   key={index}
-                                  className='flex items-center justify-between bg-gray-100 rounded-lg px-4 py-2 text-sm text-gray-800'
+                                  className='flex items-center justify-between bg-white rounded-lg px-4 py-2 text-sm text-gray-800 border border-slate-200'
                                 >
                                   <span className='truncate max-w-[80%]'>
                                     {file.name}
@@ -522,7 +663,7 @@ const ImportDataModal = () => {
                                   <button
                                     onClick={() => {
                                       const updatedFiles = files.filter(
-                                        (_, i) => i !== index
+                                        (_, i) => i !== index,
                                       );
                                       setFiles(updatedFiles);
                                     }}
@@ -538,9 +679,16 @@ const ImportDataModal = () => {
                         )}
                       </div>
 
-                      <p className='text-gray-500 text-sm'>
-                        {t('ImportData.onlyXlsxFiles')}
+                      <p className='text-gray-500 text-sm leading-relaxed'>
+                        {t('ImportData.supportedFormats')}
                       </p>
+
+                      {successMessage && (
+                        <div className='flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700'>
+                          <FaCheckCircle />
+                          <span className='text-sm'>{successMessage}</span>
+                        </div>
+                      )}
 
                       {errorMessage && (
                         <div className='flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700'>
@@ -562,10 +710,143 @@ const ImportDataModal = () => {
                           onClick={handleNext}
                           className='px-8'
                         >
-                          {loading ? 'Parsing...' : t('ImportData.next')}
+                          {loading ? t('ImportData.loading') : t('ImportData.next')}
                         </Button>
                       </div>
                     </div>
+                  ) : importSource === 'cloudnoise' ? (
+                    <form onSubmit={handleCloudNoiseSubmit} className='space-y-4'>
+                      <p className='text-sm text-gray-500'>
+                        {t('ImportData.cloudnoiseHint')}
+                      </p>
+
+                      <Button
+                        type='button'
+                        variant='secondary'
+                        onClick={handleLoadDemo}
+                        className='w-full'
+                      >
+                        {t('ImportData.loadDemo')}
+                      </Button>
+
+                      <div className='flex gap-3'>
+                        <button
+                          type='button'
+                          onClick={() => setCloudNoiseQueryMode('indicator')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium ${
+                            cloudNoiseQueryMode === 'indicator'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          Indicator
+                        </button>
+                        <button
+                          type='button'
+                          onClick={() => setCloudNoiseQueryMode('range')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium ${
+                            cloudNoiseQueryMode === 'range'
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          Time range
+                        </button>
+                      </div>
+
+                      {cloudNoiseQueryMode === 'indicator' ? (
+                        <div>
+                          <label
+                            htmlFor='cloudnoise-indicator'
+                            className='block text-sm font-medium text-gray-700 mb-1'
+                          >
+                            Indicator
+                          </label>
+                          <select
+                            id='cloudnoise-indicator'
+                            value={cloudNoiseIndicator}
+                            onChange={(e) =>
+                              setCloudNoiseIndicator(e.target.value)
+                            }
+                            className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                          >
+                            <option value='ld'>Ld</option>
+                            <option value='le'>Le</option>
+                            <option value='ln'>Ln</option>
+                            <option value='lden'>Lden</option>
+                          </select>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <label
+                              htmlFor='cloudnoise-start'
+                              className='block text-sm font-medium text-gray-700 mb-1'
+                            >
+                              Start
+                            </label>
+                            <input
+                              id='cloudnoise-start'
+                              type='text'
+                              value={cloudNoiseStart}
+                              onChange={(e) =>
+                                setCloudNoiseStart(e.target.value)
+                              }
+                              className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                              placeholder='2000-01-01 00:04:11'
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor='cloudnoise-end'
+                              className='block text-sm font-medium text-gray-700 mb-1'
+                            >
+                              End
+                            </label>
+                            <input
+                              id='cloudnoise-end'
+                              type='text'
+                              value={cloudNoiseEnd}
+                              onChange={(e) => setCloudNoiseEnd(e.target.value)}
+                              className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                              placeholder='2000-01-01 02:03:38'
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {successMessage && (
+                        <div className='flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700'>
+                          <FaCheckCircle />
+                          <span className='text-sm'>{successMessage}</span>
+                        </div>
+                      )}
+
+                      {errorMessage && (
+                        <div className='flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700'>
+                          <FaExclamationTriangle />
+                          <span className='text-sm'>{errorMessage}</span>
+                        </div>
+                      )}
+
+                      <div className='flex justify-end gap-3 pt-4'>
+                        <button
+                          type='button'
+                          onClick={() => setMode('drag')}
+                          className='bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-6 rounded-full transition-colors'
+                          disabled={importLoading}
+                        >
+                          Cancel
+                        </button>
+                        <Button
+                          type='submit'
+                          disabled={importLoading}
+                          className='px-8'
+                        >
+                          {importLoading ? 'Loading...' : 'Load CloudNoise'}
+                        </Button>
+                      </div>
+                    </form>
                   ) : (
                     <form onSubmit={handleImportSubmit} className='space-y-4'>
                       {importSource === 'ftp' ? (

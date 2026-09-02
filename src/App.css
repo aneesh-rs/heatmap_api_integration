@@ -126,3 +126,13 @@
     @apply bg-background text-foreground;
     }
 }
+
+.leaflet-tooltip.street-noise-label {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #d1d5db;
+  color: #111827;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  box-shadow: none;
+}
