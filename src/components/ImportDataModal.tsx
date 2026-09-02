@@ -16,11 +16,11 @@ import terrassaDemoStreets from '@/constants/terrassa_demo_streets';
 import { applyStreetHeatmap } from '@/utils/loadStreetHeatmap';
 import {
   normalizeStreetGeoJson,
-  parseStreetCsvText,
   parseStreetGeoJsonText,
   parseStreetWorkbookRows,
   workbookLooksLikeStreetLines,
 } from '@/utils/streetGeoJson';
+import { parseImportCsv } from '@/utils/csvImport';
 
 export type HeatmapPoint = [number, number, number];
 
@@ -111,7 +111,18 @@ const ImportDataModal = () => {
 
       if (extension === 'csv') {
         const text = await file.text();
-        showStreetHeatmap(parseStreetCsvText(text));
+        const result = parseImportCsv(text);
+
+        if (result.type === 'street') {
+          showStreetHeatmap(result.geojson);
+          return;
+        }
+
+        clearStreetHeatmap();
+        setData(result.dataPoints);
+        activateHeatmap();
+        setMode('drag');
+        setSuccessMessage(`Loaded ${result.dataPoints.length} point measurements`);
         return;
       }
 

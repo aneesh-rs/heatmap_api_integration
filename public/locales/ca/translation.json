@@ -218,7 +218,7 @@
     "streetHeatmapTitle": "Mapa de calor per carrers",
     "streetHeatmapHint": "Mostra segments de carrer colorejats amb etiquetes dB. Funciona sense connexió CloudNoise.",
     "loadDemo": "Carregar demo de carrers",
-    "supportedFormats": "Puja .geojson/.json per carrers, o .csv/.xlsx amb columnes: street_name, calculated_eq, lat1, lon1, lat2, lon2.",
+    "supportedFormats": "Puja .geojson/.json o .csv/.xlsx. Carrers: street_name, calculated_eq, lat1, lon1, lat2, lon2. Punts: lat, lon, frequency, date, time, audioType.",
     "cloudnoiseHint": "Dades CloudNoise en viu via backend. A Vercel cal CLOUDNOISE_HTTP_URL.",
     "loading": "Carregant...",
     "dragAndDrop": "Arrossega i deixa anar els teus fitxers aquí",

@@ -1,4 +1,5 @@
 import { StreetNoiseGeoJson } from '@/store/useCloudNoiseStore';
+import { parseCsvRecords } from '@/utils/csvParse';
 
 function parseNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === '') return null;
@@ -79,24 +80,10 @@ export function parseStreetGeoJsonText(text: string): StreetNoiseGeoJson {
 }
 
 export function parseStreetCsvText(text: string): StreetNoiseGeoJson {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (lines.length < 2) {
-    throw new Error('CSV must include a header row and at least one street row.');
-  }
-
-  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+  const records = parseCsvRecords(text);
   const features: StreetNoiseGeoJson['features'] = [];
 
-  for (const row of lines.slice(1)) {
-    const cells = row.split(',').map((cell) => cell.trim().replace(/^"|"$/g, ''));
-    const record = Object.fromEntries(
-      headers.map((header, index) => [header, cells[index] ?? '']),
-    );
-
+  for (const record of records) {
     const streetName =
       record.street_name || record.streetname || record.street || 'Street';
     const calculatedEq = parseNumber(

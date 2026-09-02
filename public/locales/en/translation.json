@@ -220,7 +220,7 @@
     "streetHeatmapTitle": "Street line heatmap",
     "streetHeatmapHint": "Shows colored street segments with dB labels. Works without CloudNoise connection.",
     "loadDemo": "Load demo street heatmap",
-    "supportedFormats": "Upload .geojson/.json for street lines, or .csv/.xlsx with columns: street_name, calculated_eq, lat1, lon1, lat2, lon2. Legacy point .xlsx still supported.",
+    "supportedFormats": "Upload .geojson/.json or .csv/.xlsx. Street lines: street_name, calculated_eq, lat1, lon1, lat2, lon2. Point heatmap: lat, lon, frequency, date, time, audioType.",
     "cloudnoiseHint": "Live CloudNoise data via backend. On Vercel needs CLOUDNOISE_HTTP_URL. Local dev can use CoAP with COAP_ENABLED=true.",
     "loading": "Loading...",
     "dragAndDrop": "Drag and drop your files here",
