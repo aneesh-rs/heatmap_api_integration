@@ -83,10 +83,28 @@ const ImportDataModal = () => {
     setMode('drag');
   };
 
-  const handleLoadDemo = () => {
+  const handleLoadDemo = async () => {
     setErrorMessage(null);
     setSuccessMessage(null);
-    showStreetHeatmap(normalizeStreetGeoJson(terrassaDemoStreets));
+    setLoading(true);
+    try {
+      const response = await fetch('/sample_street_heatmap.geojson');
+      if (!response.ok) {
+        throw new Error('Demo GeoJSON missing from /sample_street_heatmap.geojson');
+      }
+      const data = await response.json();
+      showStreetHeatmap(normalizeStreetGeoJson(data));
+    } catch (error) {
+      if (terrassaDemoStreets.features.length) {
+        showStreetHeatmap(normalizeStreetGeoJson(terrassaDemoStreets));
+        return;
+      }
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Failed to load demo streets.',
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNext = async () => {
@@ -304,9 +322,9 @@ const ImportDataModal = () => {
       }
 
       clearData();
-      applyStreetHeatmap(geojson);
+      applyStreetHeatmap(normalizeStreetGeoJson(geojson));
       setSuccessMessage(
-        `Loaded ${response.data.featureCount} streets from CloudNoise`,
+        `Loaded ${response.data.featureCount ?? geojson.features.length} street segments from CloudNoise`,
       );
       setMode('drag');
     } catch (error) {

@@ -382,7 +382,7 @@ export default function Home({ role = 'User' }: HomeProps) {
               onSelectPolygon={(id) => console.log('Selected polygon:', id)}
             />
           )}
-        {selectedMode === 'import' && (
+        {selectedMode === 'import' && !cloudNoiseActive && (
           <UploadedDataPoints points={coordinates as LatLngTuple[]} />
         )}
 

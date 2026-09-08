@@ -128,11 +128,16 @@
 }
 
 .leaflet-tooltip.street-noise-label {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #d1d5db;
-  color: #111827;
-  font-size: 11px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  font-size: 12px;
   font-weight: 600;
-  padding: 2px 6px;
-  box-shadow: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.15);
+}
+
+.leaflet-tooltip.street-noise-label::before {
+  border-top-color: rgba(255, 255, 255, 0.95);
 }

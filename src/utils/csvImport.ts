@@ -15,14 +15,23 @@ function parseNumber(value: unknown): number | null {
 
 export function csvLooksLikeStreetLines(headers: string[]): boolean {
   const keys = headers.map((header) => header.toLowerCase());
-  return (
-    keys.includes('street_name') &&
-    keys.includes('calculated_eq') &&
-    keys.includes('lat1') &&
-    keys.includes('lon1') &&
-    keys.includes('lat2') &&
-    keys.includes('lon2')
-  );
+  const hasIdentity =
+    keys.includes('street_name') && keys.includes('calculated_eq');
+  const hasCoords =
+    keys.includes('coordinates') ||
+    keys.includes('geometry') ||
+    keys.includes('wkt') ||
+    (keys.includes('lat1') &&
+      keys.includes('lon1') &&
+      keys.includes('lat2') &&
+      keys.includes('lon2'));
+  return hasIdentity && hasCoords;
+}
+
+/** If street_name present, never treat as point heatmap (avoids accidental circles). */
+export function csvLooksLikeStreetHint(headers: string[]): boolean {
+  const keys = headers.map((header) => header.toLowerCase());
+  return keys.includes('street_name') || keys.includes('calculated_eq');
 }
 
 export function csvLooksLikePointData(headers: string[]): boolean {
@@ -89,11 +98,17 @@ export function parseImportCsv(text: string): CsvImportResult {
     return { type: 'street', geojson: parseStreetCsvText(text) };
   }
 
+  if (csvLooksLikeStreetHint(headers)) {
+    throw new Error(
+      'Street CSV detected but missing geometry. Use sample_street_heatmap.geojson, or CSV columns street_name, calculated_eq, coordinates (JSON [[lon,lat],...]).',
+    );
+  }
+
   if (csvLooksLikePointData(headers)) {
     return { type: 'point', dataPoints: parsePointRows(records) };
   }
 
   throw new Error(
-    'Unsupported CSV format. Use street columns (street_name, calculated_eq, lat1, lon1, lat2, lon2) or point columns (lat, lon, frequency, date, time).',
+    'Unsupported CSV. Street heatmap: .geojson (preferred) or street_name,calculated_eq,coordinates. Point heatmap: lat,lon,frequency,date,time.',
   );
 }

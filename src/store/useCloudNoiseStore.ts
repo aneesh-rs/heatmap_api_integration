@@ -26,7 +26,7 @@ export const useCloudNoiseStore = create<CloudNoiseStore>()(
       setActive: (active) => set({ active }),
     }),
     {
-      name: 'street-heatmap-store',
+      name: 'street-heatmap-store-v2',
       partialize: (state) => ({
         geojson: state.geojson,
         active: state.active,
