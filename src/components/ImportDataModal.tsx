@@ -130,17 +130,13 @@ const ImportDataModal = () => {
       if (extension === 'csv') {
         const text = await file.text();
         const result = parseImportCsv(text);
-
-        if (result.type === 'street') {
-          showStreetHeatmap(result.geojson);
-          return;
+        // Manual tab is street-line only — parseImportCsv throws on point CSVs.
+        if (result.type !== 'street') {
+          throw new Error(
+            'Manual upload is street-line only. Use sample_street_heatmap.geojson (not point lat/lon CSV).',
+          );
         }
-
-        clearStreetHeatmap();
-        setData(result.dataPoints);
-        activateHeatmap();
-        setMode('drag');
-        setSuccessMessage(`Loaded ${result.dataPoints.length} point measurements`);
+        showStreetHeatmap(result.geojson);
         return;
       }
 
@@ -158,51 +154,24 @@ const ImportDataModal = () => {
           return;
         }
 
-        const parsedData: (DataPoint | null)[] = jsonData.map((row) => {
-          const lat = parseFloat(row['lat']?.toString().replace(',', '.') || '');
-          const lon = parseFloat(row['lon']?.toString().replace(',', '.') || '');
-          const frequency = parseFloat(
-            row['frequency']?.toString().replace(',', '.') || '',
-          );
-          const date = row['date']?.toString() || '';
-          const time = row['time']?.toString() || '';
-          const audioType = row['audioType']?.toString() || '';
-
-          if (!isNaN(lat) && !isNaN(lon) && !isNaN(frequency) && date && time) {
-            const timestamp = new Date(`${date}T${time}`).toISOString();
-            return {
-              lat,
-              lon,
-              frequency,
-              date,
-              time,
-              timestamp,
-              audioType: audioType as AudioType,
-            };
-          }
-          return null;
-        });
-
-        const cleanData: DataPoint[] = parsedData.filter(
-          (d): d is DataPoint => d !== null,
-        );
-
-        if (!cleanData.length) {
+        const keys = Object.keys(jsonData[0] ?? {}).map((key) => key.toLowerCase());
+        if (
+          keys.includes('lat') &&
+          keys.includes('lon') &&
+          (keys.includes('frequency') || keys.includes('calculated_eq'))
+        ) {
           throw new Error(
-            'No valid rows found. For street lines use street_name, calculated_eq, lat1, lon1, lat2, lon2.',
+            'This spreadsheet is point data (lat/lon) — that draws circles. Use street LineString GeoJSON (sample_street_heatmap.geojson) or columns street_name, calculated_eq, coordinates.',
           );
         }
 
-        clearStreetHeatmap();
-        setData(cleanData);
-        activateHeatmap();
-        setMode('drag');
-        setSuccessMessage(`Loaded ${cleanData.length} point measurements`);
-        return;
+        throw new Error(
+          'No street rows found. Use street_name, calculated_eq, coordinates (or lat1,lon1,lat2,lon2). Prefer .geojson LineStrings.',
+        );
       }
 
       throw new Error(
-        'Unsupported file type. Use .geojson, .csv, or .xlsx for street line heatmap.',
+        'Unsupported file type. Use .geojson (preferred), street .csv, or street .xlsx.',
       );
     } catch (error) {
       setErrorMessage(
@@ -412,6 +381,7 @@ const ImportDataModal = () => {
           },
         );
         setData(mapped);
+        clearStreetHeatmap();
         activateHeatmap();
       }
 

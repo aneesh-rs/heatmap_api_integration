@@ -67,48 +67,98 @@ export function parseCoordinatesCell(raw: unknown): [number, number][] | null {
   return null;
 }
 
-export function isStreetGeoJson(value: unknown): value is StreetNoiseGeoJson {
+type RawFeature = {
+  type?: string;
+  properties?: Record<string, unknown>;
+  geometry?: {
+    type?: string;
+    coordinates?: unknown;
+  };
+};
+
+function toLineFeatures(feature: RawFeature): StreetNoiseGeoJson['features'] {
+  const geometry = feature.geometry;
+  if (!geometry?.type || !geometry.coordinates) return [];
+
+  const props = feature.properties ?? {};
+  const streetName = String(
+    props.street_name ?? props.streetName ?? 'Street',
+  );
+  const calculatedEq = Number(
+    props.calculated_eq ?? props.noiseValue ?? props.frequency ?? 0,
+  );
+
+  if (geometry.type === 'LineString') {
+    const coordinates = geometry.coordinates as [number, number][];
+    if (!Array.isArray(coordinates) || coordinates.length < 2) return [];
+    return [lineFeature(streetName, calculatedEq, coordinates, { ...props })];
+  }
+
+  if (geometry.type === 'MultiLineString') {
+    const lines = geometry.coordinates as [number, number][][];
+    if (!Array.isArray(lines)) return [];
+    return lines
+      .filter((coordinates) => Array.isArray(coordinates) && coordinates.length >= 2)
+      .map((coordinates, index) =>
+        lineFeature(streetName, calculatedEq, coordinates, {
+          ...props,
+          segment_index: index,
+        }),
+      );
+  }
+
+  return [];
+}
+
+export function isStreetGeoJson(value: unknown): boolean {
   if (!value || typeof value !== 'object') return false;
-  const candidate = value as StreetNoiseGeoJson;
+  const candidate = value as { type?: string; features?: RawFeature[] };
   if (candidate.type !== 'FeatureCollection' || !Array.isArray(candidate.features)) {
     return false;
   }
 
-  return candidate.features.some(
-    (feature) =>
-      feature?.geometry?.type === 'LineString' &&
-      Array.isArray(feature.geometry.coordinates) &&
-      feature.geometry.coordinates.length >= 2,
-  );
+  return candidate.features.some((feature) => {
+    const type = feature?.geometry?.type;
+    return type === 'LineString' || type === 'MultiLineString';
+  });
 }
 
 export function normalizeStreetGeoJson(value: unknown): StreetNoiseGeoJson {
-  if (!isStreetGeoJson(value)) {
+  if (!value || typeof value !== 'object') {
+    throw new Error(
+      'Invalid street GeoJSON. Expected FeatureCollection with LineString features.',
+    );
+  }
+
+  const candidate = value as { type?: string; features?: RawFeature[] };
+  if (candidate.type !== 'FeatureCollection' || !Array.isArray(candidate.features)) {
     throw new Error(
       'Invalid street GeoJSON. Expected FeatureCollection with LineString features (street_name, calculated_eq).',
     );
   }
 
-  const features = value.features
-    .filter((feature) => feature.geometry?.type === 'LineString')
-    .map((feature) => {
-      const props = feature.properties ?? {};
-      return {
-        ...feature,
-        properties: {
-          ...props,
-          street_name: String(
-            props.street_name ?? props.streetName ?? 'Street',
-          ),
-          calculated_eq: Number(
-            props.calculated_eq ?? props.noiseValue ?? props.frequency ?? 0,
-          ),
-        },
-      };
-    }) as StreetNoiseGeoJson['features'];
+  const geometryTypes = new Set(
+    candidate.features
+      .map((feature) => feature?.geometry?.type)
+      .filter(Boolean),
+  );
+
+  if (
+    (geometryTypes.has('Point') || geometryTypes.has('MultiPoint')) &&
+    !geometryTypes.has('LineString') &&
+    !geometryTypes.has('MultiLineString')
+  ) {
+    throw new Error(
+      'This file has Point features — that draws circles. Use LineString/MultiLineString GeoJSON (street segments), e.g. sample_street_heatmap.geojson.',
+    );
+  }
+
+  const features = candidate.features.flatMap((feature) => toLineFeatures(feature));
 
   if (!features.length) {
-    throw new Error('No LineString street features found in GeoJSON.');
+    throw new Error(
+      'No LineString street features found. Upload street GeoJSON (not lat/lon point CSV).',
+    );
   }
 
   return {

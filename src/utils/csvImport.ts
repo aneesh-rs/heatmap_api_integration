@@ -90,6 +90,9 @@ export function parsePointCsvText(text: string): DataPoint[] {
   return parsePointRows(parseCsvRecords(text));
 }
 
+const STREET_ONLY_HINT =
+  'Manual upload is street-line only (no circles). Use sample_street_heatmap.geojson, or CSV with street_name, calculated_eq, coordinates (JSON [[lon,lat],...]). Point CSV (lat,lon,frequency) draws dots and is blocked here.';
+
 export function parseImportCsv(text: string): CsvImportResult {
   const records = parseCsvRecords(text);
   const headers = Object.keys(records[0] ?? {});
@@ -105,10 +108,8 @@ export function parseImportCsv(text: string): CsvImportResult {
   }
 
   if (csvLooksLikePointData(headers)) {
-    return { type: 'point', dataPoints: parsePointRows(records) };
+    throw new Error(STREET_ONLY_HINT);
   }
 
-  throw new Error(
-    'Unsupported CSV. Street heatmap: .geojson (preferred) or street_name,calculated_eq,coordinates. Point heatmap: lat,lon,frequency,date,time.',
-  );
+  throw new Error(STREET_ONLY_HINT);
 }
